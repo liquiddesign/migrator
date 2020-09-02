@@ -1,0 +1,50 @@
+services:
+	#- Nette\Caching\Storages\FileStorage('temp_fixed')
+	- Nette\Caching\Storages\DevNullStorage
+	db.stocks: \DB\StockRepository
+	db.tags: \DB\TagRepository
+	db.sectors: \DB\SectorRepository
+	db.industry: \DB\IndustryRepository
+	db.alerts: \DB\AlertRepository
+	db.types: \DB\TypeRepository
+	- Tracy\Debugger::getBar
+
+storm:
+	debug: true
+	connections:
+		default:
+			host: 127.0.0.1
+			dbname: _test_migrator
+			user: root
+			password: ""
+			driver: mysql
+			charset: utf8
+			collate: utf8_czech_ci
+			primaryKeyGenerator: StORM\Connection::generateUuid
+		sandbox1:
+			host: 127.0.0.1
+			dbname: _test_migrator_sandbox1
+			user: root
+			password: ""
+			driver: mysql
+			charset: utf8
+			collate: utf8_czech_ci
+			primaryKeyGenerator: StORM\Connection::generateUuid
+		sandbox2:
+			host: 127.0.0.1
+			dbname: _test_migrator_sandbox2
+			user: root
+			password: ""
+			driver: mysql
+			charset: utf8
+			collate: utf8_czech_ci
+			primaryKeyGenerator: StORM\Connection::generateUuid
+		sandbox3:
+			host: 127.0.0.1
+			dbname: _test_migrator_sandbox3
+			user: root
+			password: ""
+			driver: mysql
+			charset: utf8
+			collate: utf8_czech_ci
+			primaryKeyGenerator: StORM\Connection::generateUuid

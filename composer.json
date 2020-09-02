@@ -1,0 +1,27 @@
+{
+  "name": "liquiddesign/migrator",
+  "description": "⇄ Migrátor je nástroj pro synchronizaci StORM Entit and SQL databáze",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {"Migrator\\": "src/"}
+  },
+  "require" :
+  {
+    "php": ">=7.4.0",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "liquiddesign/storm":"@dev"
+  },
+  "require-dev":
+  {
+    "nette/tester":"*",
+    "phpstan/phpstan":"*",
+    "liquiddesign/codestyle": "@dev"
+  },
+  "scripts": {
+    "phpstan": "phpstan analyse --memory-limit 1G -c phpstan.neon",
+    "phpcs": "phpcs --standard=ruleset.xml src",
+    "phpcsfix": "phpcbf --standard=ruleset.xml src",
+    "tester": "tester tests/*.phpt -j 0 -c tests/php.ini --setup tests/setup.php"
+  }
+}
