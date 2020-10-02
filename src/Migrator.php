@@ -9,6 +9,7 @@ use StORM\Meta\Column;
 use StORM\Meta\Constraint;
 use StORM\Meta\Index;
 use StORM\Meta\RelationNxN;
+use StORM\Meta\Structure;
 use StORM\Meta\Table;
 use StORM\Meta\Trigger;
 use StORM\SchemaManager;
@@ -81,6 +82,11 @@ class Migrator
 	 * @var \StORM\SchemaManager
 	 */
 	private $schemaManager;
+	
+	/**
+	 * @var mixed[]
+	 */
+	private array $defaultPrimaryKeyConfiguration;
 	
 	public function __construct(DIConnection $connection, SchemaManager $schemaManager)
 	{
@@ -315,7 +321,7 @@ class Migrator
 			$rows->whereNot('this.INDEX_NAME', 'PRIMARY');
 		}
 		
-		$rows->groupBy(['this.INDEX_NAME']);
+		$rows->setGroupBy(['this.INDEX_NAME']);
 		
 		
 		$indexes = [];
@@ -469,13 +475,31 @@ class Migrator
 		return $this->defaultConstraintActionOnDelete;
 	}
 	
+	private function getEntityClass(string $repositoryName): string
+	{
+		return Structure::getEntityClassFromRepositoryClass(\get_class($this->connection->findRepositoryByName($repositoryName)));
+	}
+	
+	public function getDefaultPrimaryKey(string $class): Column
+	{
+		$column = new Column($class, null);
+		$column->setPrimaryKey(true);
+		$column->loadFromArray($this->defaultPrimaryKeyConfiguration);
+	}
+	
+	public function setDefaultPrimaryKeyConfiguration(array $configuration): void
+	{
+		$this->defaultPrimaryKeyConfiguration = $configuration;
+	}
+	
 	public function dumpStructure(): string
 	{
 		$tables = [];
 		$sql = '';
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
-			$structure = $this->connection->findRepositoryByName($repositoryName)->getStructure();
+			$class = $this->getEntityClass($repositoryName);
+			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
 			$entityTable = $structure->getTable();
 			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
 			$tables[] = $entityTable->getName();
@@ -484,12 +508,14 @@ class Migrator
 		}
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
-			$structure = $this->connection->findRepositoryByName($repositoryName)->getStructure();
+			$class = $this->getEntityClass($repositoryName);
+			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
 			$sql .= $this->getSqlAddMetas($structure->getTable(), $structure->getConstraints(), $structure->getIndexes(), $structure->getTriggers());
 		}
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
-			$structure = $this->connection->findRepositoryByName($repositoryName)->getStructure();
+			$class = $this->getEntityClass($repositoryName);
+			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
 			
 			foreach ($structure->getRelations() as $relation) {
 				if ($relation instanceof \StORM\Meta\RelationNxN && !isset($tables[$relation->getVia()])) {
@@ -525,7 +551,8 @@ class Migrator
 		$tableExists = [];
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
-			$structure = $this->connection->findRepositoryByName($repositoryName)->getStructure();
+			$class = $this->getEntityClass($repositoryName);
+			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
 			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
 			$tableExists[$repositoryName] = $this->getTable($structure->getTable()->getName()) !== null;
 			
@@ -537,7 +564,8 @@ class Migrator
 		}
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
-			$structure = $this->connection->findRepositoryByName($repositoryName)->getStructure();
+			$class = $this->getEntityClass($repositoryName);
+			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
 			$tableName = $structure->getTable()->getName();
 			
 			if ($tableExists[$repositoryName]) {
