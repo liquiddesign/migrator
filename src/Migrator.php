@@ -3,6 +3,8 @@
 namespace Migrator;
 
 use Migrator\SqlGenerator\ISqlEntity;
+use Nette\Caching\Cache;
+use Nette\Caching\Storages\DevNullStorage;
 use StORM\DIConnection;
 use StORM\Helpers;
 use StORM\Meta\Column;
@@ -21,25 +23,16 @@ class Migrator
 	public const ALTER_ADD = 'ADD';
 	public const NULL = 'null';
 	
-	/**
-	 * @var \StORM\DIConnection
-	 */
-	private $connection;
+	private \StORM\DIConnection $connection;
 	
-	/**
-	 * @var string
-	 */
-	private $defaultCharset;
+	private string $defaultCharset;
 	
-	/**
-	 * @var string
-	 */
-	private $defaultCollation;
+	private string $defaultCollation;
 	
 	/**
 	 * @var string[]
 	 */
-	private $defaultTypeMap = [
+	private array $defaultTypeMap = [
 		'int' => 'int',
 		'string' => 'varchar',
 		'bool' => 'tinyint',
@@ -49,7 +42,7 @@ class Migrator
 	/**
 	 * @var string[]|int[]
 	 */
-	private $defaultLengthMap = [
+	private array $defaultLengthMap = [
 		'int' => 11,
 		'varchar' => 255,
 		'tinyint' => 1,
@@ -58,35 +51,26 @@ class Migrator
 	/**
 	 * @var string[]|int[]
 	 */
-	private $defaultPrimaryKeyLengthMap = [
+	private array $defaultPrimaryKeyLengthMap = [
 		'int' => 11,
 		'varchar' => 32,
 	];
 	
-	/**
-	 * @var string
-	 */
-	private $defaultEngine = 'InnoDB';
+	private string $defaultEngine = 'InnoDB';
 	
-	/**
-	 * @var string
-	 */
-	private $defaultConstraintActionOnUpdate = 'NO ACTION';
+	private string $defaultConstraintActionOnUpdate = 'NO ACTION';
 	
-	/**
-	 * @var string
-	 */
-	private $defaultConstraintActionOnDelete = 'NO ACTION';
+	private string $defaultConstraintActionOnDelete = 'NO ACTION';
 	
-	/**
-	 * @var \StORM\SchemaManager
-	 */
-	private $schemaManager;
+	private \StORM\SchemaManager $schemaManager;
 	
 	/**
 	 * @var mixed[]
 	 */
-	private array $defaultPrimaryKeyConfiguration;
+	private array $defaultPrimaryKeyConfiguration = [
+		'name' => 'uuid',
+		'propertyType' => 'string',
+	];
 	
 	public function __construct(DIConnection $connection, SchemaManager $schemaManager)
 	{
@@ -135,7 +119,7 @@ class Migrator
 	}
 	
 	/**
-	 * @param string|null $sqlType
+	 * @param string $sqlType
 	 * @throws \Exception
 	 */
 	public function getDefaultLength(string $sqlType): ?string
@@ -428,12 +412,12 @@ class Migrator
 		
 		return $table;
 	}
-
+	
 	public function getDefaultCharset(): string
 	{
 		return $this->defaultCharset;
 	}
-
+	
 	public function setDefaultCharset(string $defaultCharset): void
 	{
 		$this->defaultCharset = $defaultCharset;
@@ -448,12 +432,12 @@ class Migrator
 	{
 		return $this->defaultEngine;
 	}
-
+	
 	public function getDefaultCollation(): string
 	{
 		return $this->defaultCollation;
 	}
-
+	
 	public function setDefaultCollation(string $defaultCollation): void
 	{
 		$this->defaultCollation = $defaultCollation;
@@ -475,16 +459,21 @@ class Migrator
 		return $this->defaultConstraintActionOnDelete;
 	}
 	
-	private function getEntityClass(string $repositoryName): string
-	{
-		return Structure::getEntityClassFromRepositoryClass(\get_class($this->connection->findRepositoryByName($repositoryName)));
-	}
-	
 	public function getDefaultPrimaryKey(string $class): Column
 	{
+		$config = $this->defaultPrimaryKeyConfiguration;
+		
 		$column = new Column($class, null);
+
+		if (isset($config['propertyType'])) {
+			$column->setPropertyType($config['propertyType']);
+			unset($config['propertyType']);
+		}
+
 		$column->setPrimaryKey(true);
-		$column->loadFromArray($this->defaultPrimaryKeyConfiguration);
+		$column->loadFromArray($config);
+		
+		return $column;
 	}
 	
 	public function setDefaultPrimaryKeyConfiguration(array $configuration): void
@@ -499,7 +488,9 @@ class Migrator
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
-			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
+			
+			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
+			
 			$entityTable = $structure->getTable();
 			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
 			$tables[] = $entityTable->getName();
@@ -509,13 +500,13 @@ class Migrator
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
-			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
+			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
 			$sql .= $this->getSqlAddMetas($structure->getTable(), $structure->getConstraints(), $structure->getIndexes(), $structure->getTriggers());
 		}
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
-			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
+			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
 			
 			foreach ($structure->getRelations() as $relation) {
 				if ($relation instanceof \StORM\Meta\RelationNxN && !isset($tables[$relation->getVia()])) {
@@ -552,7 +543,7 @@ class Migrator
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
-			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
+			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
 			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
 			$tableExists[$repositoryName] = $this->getTable($structure->getTable()->getName()) !== null;
 			
@@ -565,7 +556,7 @@ class Migrator
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
-			$structure = $this->schemaManager->getStructure($class, false, $this->getDefaultPrimaryKey($class));
+			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
 			$tableName = $structure->getTable()->getName();
 			
 			if ($tableExists[$repositoryName]) {
@@ -729,7 +720,7 @@ class Migrator
 		
 		return $tableSql->getAdd($columns);
 	}
-
+	
 	/**
 	 * @param \StORM\Meta\Table $fromTable
 	 * @param \StORM\Meta\Table $toTable
@@ -828,7 +819,7 @@ class Migrator
 		
 		return $sql;
 	}
-
+	
 	/**
 	 * @param \StORM\Meta\Table $fromTable
 	 * @param \StORM\Meta\Column[] $fromColumns
@@ -905,5 +896,10 @@ class Migrator
 		}
 		
 		return $sql;
+	}
+
+	private function getEntityClass(string $repositoryName): string
+	{
+		return Structure::getEntityClassFromRepositoryClass(\get_class($this->connection->findRepositoryByName($repositoryName)));
 	}
 }

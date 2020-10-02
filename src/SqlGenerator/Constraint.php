@@ -15,26 +15,14 @@ class Constraint implements ISqlEntity
 		'onUpdate',
 		'onDelete',
 	];
+
+	private \StORM\Meta\Constraint $constraint;
 	
-	/**
-	 * @var \StORM\Meta\Constraint
-	 */
-	private $constraint;
-	
-	/**
-	 * @var string
-	 */
-	private $tableName;
-	
-	/**
-	 * @var \StORM\DIConnection
-	 */
-	private $connection;
-	
-	/**
-	 * @var \Migrator\Migrator
-	 */
-	private $migrator;
+	private string $tableName;
+
+	private \StORM\DIConnection $connection;
+
+	private \Migrator\Migrator $migrator;
 	
 	public function __construct(Migrator $migrator, string $tableName, \StORM\Meta\Constraint $constraint)
 	{
@@ -81,7 +69,6 @@ class Constraint implements ISqlEntity
 	
 	/**
 	 * @return string[]
-	 * @throws \ReflectionException
 	 */
 	public function getSqlProperties(): array
 	{

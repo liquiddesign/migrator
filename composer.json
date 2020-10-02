@@ -11,6 +11,7 @@
     "ext-pdo": "*",
     "ext-json": "*",
     "liquiddesign/storm":"@dev",
+    "nette/caching":"^3.0",
     "composer/composer":"^1.0"
   },
   "require-dev":

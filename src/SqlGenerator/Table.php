@@ -12,21 +12,12 @@ class Table implements ISqlEntity
 		'collate',
 		'comment',
 	];
-	
-	/**
-	 * @var \StORM\Connection
-	 */
-	private $connection;
-	
-	/**
-	 * @var \StORM\Meta\Table
-	 */
-	private $table;
-	
-	/**
-	 * @var \Migrator\Migrator
-	 */
-	private $migrator;
+
+	private \StORM\Connection $connection;
+
+	private \StORM\Meta\Table $table;
+
+	private \Migrator\Migrator $migrator;
 	
 	public function __construct(Migrator $migrator, \StORM\Meta\Table $table)
 	{
@@ -100,7 +91,6 @@ class Table implements ISqlEntity
 	
 	/**
 	 * @return string[]
-	 * @throws \ReflectionException
 	 */
 	public function getSqlProperties(): array
 	{

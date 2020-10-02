@@ -11,26 +11,14 @@ class Index implements ISqlEntity
 		'columns',
 		'unique',
 	];
+
+	private \StORM\Meta\Index $index;
+
+	private string $tableName;
+
+	private \StORM\Connection $connection;
 	
-	/**
-	 * @var \StORM\Meta\Index
-	 */
-	private $index;
-	
-	/**
-	 * @var string
-	 */
-	private $tableName;
-	
-	/**
-	 * @var \StORM\Connection
-	 */
-	private $connection;
-	
-	/**
-	 * @var \Migrator\Migrator
-	 */
-	private $migrator;
+	private \Migrator\Migrator $migrator;
 	
 	public function __construct(Migrator $migrator, string $tableName, \StORM\Meta\Index $index)
 	{
@@ -68,7 +56,6 @@ class Index implements ISqlEntity
 	
 	/**
 	 * @return string[]
-	 * @throws \ReflectionException
 	 */
 	public function getSqlProperties(): array
 	{

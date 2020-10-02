@@ -13,25 +13,13 @@ class Trigger implements ISqlEntity
 		'timing',
 	];
 	
-	/**
-	 * @var \StORM\Meta\Trigger
-	 */
-	private $trigger;
+	private \StORM\Meta\Trigger $trigger;
 	
-	/**
-	 * @var \StORM\Connection
-	 */
-	private $connection;
+	private \StORM\Connection $connection;
 	
-	/**
-	 * @var string
-	 */
-	private $tableName;
-	
-	/**
-	 * @var \Migrator\Migrator
-	 */
-	private $migrator;
+	private string $tableName;
+
+	private \Migrator\Migrator $migrator;
 	
 	public function __construct(Migrator $migrator, string $tableName, \StORM\Meta\Trigger $trigger)
 	{
@@ -68,7 +56,6 @@ class Trigger implements ISqlEntity
 	
 	/**
 	 * @return string[]
-	 * @throws \ReflectionException
 	 */
 	public function getSqlProperties(): array
 	{

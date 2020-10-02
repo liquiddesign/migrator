@@ -18,25 +18,13 @@ class Column implements ISqlEntity
 		'charset',
 	];
 	
-	/**
-	 * @var \StORM\Meta\Column
-	 */
-	private $column;
+	private \StORM\Meta\Column $column;
 	
-	/**
-	 * @var string
-	 */
-	private $tableName;
+	private string $tableName;
 	
-	/**
-	 * @var \StORM\Connection
-	 */
-	private $connection;
+	private \StORM\Connection $connection;
 	
-	/**
-	 * @var \Migrator\Migrator
-	 */
-	private $migrator;
+	private \Migrator\Migrator $migrator;
 	
 	public function __construct(Migrator $migrator, string $tableName, \StORM\Meta\Column $column)
 	{
@@ -65,7 +53,6 @@ class Column implements ISqlEntity
 	
 	/**
 	 * @return string[]
-	 * @throws \ReflectionException
 	 */
 	public function getSqlProperties(): array
 	{
@@ -74,9 +61,6 @@ class Column implements ISqlEntity
 		return \array_intersect_key($props, \array_flip(self::SQL_PROPERTIES));
 	}
 
-	/**
-	 * @throws \Exception
-	 */
 	private function setDefaults(): void
 	{
 		if ($this->column->getPropertyType()) {
