@@ -17,7 +17,7 @@ class Scripts
 		
 		$class = $arguments[0] ?? '\App\Bootstrap';
 		
-		$container = $class::boot()->createContainer();
+		$container = \method_exists($class, 'createContainer') ? $class::createContainer() : $class::boot()->createContainer();
 		
 		$migrator = $container->getByType(Migrator::class);
 		$sql = $migrator->dumpStructure();
@@ -40,7 +40,7 @@ class Scripts
 		
 		$class = $arguments[0] ?? '\App\Bootstrap';
 		
-		$container = $class::boot()->createContainer();
+		$container = \method_exists($class, 'createContainer') ? $class::createContainer() : $class::boot()->createContainer();
 		
 		$migrator = $container->getByType(Migrator::class);
 		$sql = $migrator->dumpAlters();

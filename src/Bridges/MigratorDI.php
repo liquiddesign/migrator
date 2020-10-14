@@ -33,7 +33,7 @@ class MigratorDI extends \Nette\DI\CompilerExtension
 				'propertyType' => Expect::string('string'),
 				'autoincrement' => Expect::bool(false),
 			]),
-			'engine' => Expect::string('innoDB'),
+			'engine' => Expect::string('InnoDB'),
 			'constraintActionOnUpdate' => Expect::string('NO ACTION'),
 			'constraintActionOnDelete' => Expect::string('NO ACTION'),
 		]);
