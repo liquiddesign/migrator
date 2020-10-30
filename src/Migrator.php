@@ -220,15 +220,15 @@ class Migrator
 		/** @var \StdClass $data */
 		foreach ($rows as $data) {
 			$column = new Column($tableName, $data->name);
+			$column->setPrimaryKey((bool) $data->primaryKey);
 			$data->nullable = (bool) $data->nullable;
 			$length = null;
 			\preg_match("/.+\((.*?)\)/", $data->columnType, $length);
-			unset($data->columnType);
+			unset($data->columnType, $data->primaryKey);
 			
 			$data->length = $length[1] ?? null;
-			
-			$data->primaryKey = (bool) $data->primaryKey;
 			$data->autoincrement = (bool) $data->autoincrement;
+			
 			$column->loadFromArray(Helpers::toArrayRecursive($data));
 			
 			$columns[$data->name] = $column;
