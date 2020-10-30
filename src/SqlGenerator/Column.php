@@ -95,6 +95,19 @@ class Column implements ISqlEntity
 			$this->column->setCharset($this->migrator->getDefaultCharset());
 		}
 		
+		if ($this->column->getPropertyName() !== null && \class_exists($this->column->getEntityClass())) {
+			$this->column->getDefault();
+			$defaultValue = (new \ReflectionClass($this->column->getEntityClass()))->getDefaultProperties()[$this->column->getPropertyName()];
+			
+			if ($defaultValue !== null) {
+				if (\is_bool($defaultValue)) {
+					$defaultValue = (int) $defaultValue;
+				}
+				
+				$this->column->setDefault($defaultValue);
+			}
+		}
+		
 		return;
 	}
 	
