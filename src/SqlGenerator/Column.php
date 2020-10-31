@@ -57,6 +57,7 @@ class Column implements ISqlEntity
 	public function getSqlProperties(): array
 	{
 		$props = $this->column->jsonSerialize();
+		$props['length'] = (string) $props['length'];
 		
 		return \array_intersect_key($props, \array_flip(self::SQL_PROPERTIES));
 	}
@@ -104,7 +105,7 @@ class Column implements ISqlEntity
 					$defaultValue = (int) $defaultValue;
 				}
 				
-				$this->column->setDefault($defaultValue);
+				$this->column->setDefault((string) $defaultValue);
 			}
 		}
 		
