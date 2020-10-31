@@ -120,7 +120,7 @@ class Column implements ISqlEntity
 		$type = $this->column->getType();
 		$length = $this->column->getLength() ? '('. $this->column->getLength() .')' : '';
 		$nullable = $this->column->isNullable() ? ' NULL' : ' NOT NULL';
-		$default = $this->column->getDefault() !== null ? ' DEFAULT ' . $this->column->getDefault() : '';
+		$default = $this->column->getDefault() !== null ? ' DEFAULT ' . (\is_numeric($this->column->getDefault() || $type === 'enum') ? $this->column->getDefault() : "'".$this->column->getDefault()."'" ) : '';
 		$extra = $this->column->isAutoincrement() ? ' AUTO_INCREMENT' : ($this->column->getExtra() ? ' ' . $this->column->getExtra() : '');
 		$comment = $this->column->getComment() ? ' COMMENT ' . $this->connection->quote($this->column->getComment()) : '';
 		

@@ -23,6 +23,12 @@ class Scripts
 		$sql = $migrator->dumpStructure();
 		$event->getIO()->write($sql);
 		
+		if (!$sql) {
+			$event->getIO()->write('Everything is synchronized. Good job!');
+			
+			return;
+		}
+		
 		if (!$event->getIO()->askConfirmation("Execute SQL command? (n)", false)) {
 			return;
 		}
