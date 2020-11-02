@@ -23,7 +23,7 @@ class Scripts
 		$sql = $migrator->dumpStructure();
 		$event->getIO()->write($sql);
 		
-		if (!$sql) {
+		if (!\trim($sql)) {
 			$event->getIO()->write('Everything is synchronized. Good job!');
 			
 			return;
