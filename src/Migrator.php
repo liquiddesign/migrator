@@ -292,7 +292,7 @@ class Migrator
 	{
 		$select = [
 			'name' => 'this.INDEX_NAME',
-			'columns' => "GROUP_CONCAT(this.COLUMN_NAME)",
+			'columns' => 'GROUP_CONCAT(this.COLUMN_NAME ORDER BY this.SEQ_IN_INDEX ASC)',
 			$this->connection->quoteIdentifier('unique') => 'IF(this.NON_UNIQUE,0,1)',
 		];
 		
