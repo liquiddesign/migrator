@@ -501,7 +501,9 @@ class Migrator
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
 			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
-			$sql .= $this->getSqlAddMetas($structure->getTable(), $structure->getConstraints(), $structure->getIndexes(), $structure->getTriggers());
+			$entityIndexes = $this->parseIndexes($structure->getIndexes(), $this->connection->getAvailableMutations(), $structure);
+			
+			$sql .= $this->getSqlAddMetas($structure->getTable(), $structure->getConstraints(), $entityIndexes, $structure->getTriggers());
 		}
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
@@ -558,6 +560,7 @@ class Migrator
 			$class = $this->getEntityClass($repositoryName);
 			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
 			$tableName = $structure->getTable()->getName();
+			$entityIndexes = $this->parseIndexes($structure->getIndexes(), $this->connection->getAvailableMutations(), $structure);
 			
 			if ($tableExists[$repositoryName]) {
 				$sql .= $this->getSqlSyncMetas(
@@ -565,12 +568,12 @@ class Migrator
 					$this->getConstraints($tableName),
 					$structure->getConstraints(),
 					$this->getIndexes($tableName),
-					$structure->getIndexes(),
+					$entityIndexes,
 					$this->getTriggers($tableName),
 					$structure->getTriggers(),
 				);
 			} else {
-				$sql .= $this->getSqlAddMetas($structure->getTable(), $structure->getConstraints(), $structure->getIndexes(), $structure->getTriggers());
+				$sql .= $this->getSqlAddMetas($structure->getTable(), $structure->getConstraints(), $entityIndexes, $structure->getTriggers());
 			}
 			
 			foreach ($structure->getRelations() as $relation) {
@@ -651,6 +654,38 @@ class Migrator
 				}
 			} else {
 				$parsed[$column->getName()] = $column;
+			}
+		}
+		
+		return $parsed;
+	}
+	
+	/**
+	 * @param \StORM\Meta\Index[] $indexes
+	 * @param string[] $mutations
+	 * @param \StORM\Meta\Structure $structure
+	 * @return \StORM\Meta\Index[] $indexes
+	 */
+	protected function parseIndexes(array $indexes, array $mutations, Structure $structure): array
+	{
+		$parsed = [];
+		
+		foreach ($indexes as $index) {
+			if ($index->hasMutations()) {
+				foreach ($mutations as $mutationSuffix) {
+					$newName = $index->getName() . $mutationSuffix;
+					$parsed[$newName] = clone $index;
+					$parsed[$newName]->setName($newName);
+					
+					$columns = [];
+					foreach ($index->getColumns() as $columnName) {
+						$columns[] = $structure->getColumn($columnName)->hasMutations() ? $columnName . $mutationSuffix : $columnName;
+					}
+					
+					$parsed[$newName]->setColumns($columns);
+				}
+			} else {
+				$parsed[$index->getName()] = $index;
 			}
 		}
 		
