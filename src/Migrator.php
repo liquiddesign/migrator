@@ -250,27 +250,28 @@ class Migrator
 	 */
 	public function getConstraints(string $tableName): array
 	{
-		$select = [
-			'name' => 'this.CONSTRAINT_NAME',
-			'source' => 'this.TABLE_NAME',
-			'target' => 'this.REFERENCED_TABLE_NAME',
-			'sourceKey' => 'this.COLUMN_NAME',
-			'targetKey' => 'this.REFERENCED_COLUMN_NAME',
-			'onDelete' => 'ref.DELETE_RULE',
-			'onUpdate' => 'ref.UPDATE_RULE',
-		];
+		$rows = [];
+		$pattern = '(?:`(?:[^`]|``)+`|"(?:[^"]|"")+")';
+		$onActions = 'RESTRICT|NO ACTION|CASCADE|SET NULL|SET DEFAULT';
+		$createTable = $this->getConnection()->query("SHOW CREATE TABLE $tableName")->fetchColumn(1);
 		
-		$from = ['this' => 'INFORMATION_SCHEMA.KEY_COLUMN_USAGE'];
-		$join = ['ref' => 'INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS'];
-		$dbName = $this->connection->getDatabaseName();
+		if ($createTable) {
+			\preg_match_all("~CONSTRAINT ($pattern) FOREIGN KEY ?\\(((?:$pattern,? ?)+)\\) REFERENCES ($pattern)(?:\\.($pattern))? \\(((?:$pattern,? ?)+)\\)(?: ON DELETE ($onActions))?(?: ON UPDATE ($onActions))?~", $createTable, $matches, \PREG_SET_ORDER);
+			foreach ($matches as $match) {
+				\preg_match_all("~$pattern~", $match[2], $source);
+				\preg_match_all("~$pattern~", $match[5], $target);
+				$rows[] = (object) [
+					'name' => \substr($match[1],1, -1),
+					'source' => $tableName,
+					'target' => \substr($match[4] != "" ? $match[4] : $match[3],1, -1),
+					'sourceKey' => \substr($source[0][0],1, -1),
+					'targetKey' => \substr($target[0][0],1, -1),
+					'onDelete' => $match[6] ?: 'RESTRICT',
+					'onUpdate' => $match[7] ?: 'RESTRICT',
+				];
+			}
+		}
 		
-		$rows = $this->connection->rows($from, $select)->where('this.TABLE_SCHEMA', $dbName)->where('this.TABLE_NAME', $tableName);
-		$rows->join($join, 'ref.CONSTRAINT_SCHEMA = :schema AND ref.TABLE_NAME = :table AND ref.CONSTRAINT_NAME = this.CONSTRAINT_NAME', [
-			'schema' => $dbName,
-			'table' => $tableName,
-		]);
-		// skip PRIMARY constraints
-		$rows->where('this.REFERENCED_COLUMN_NAME IS NOT NULL');
 		$constraints = [];
 		
 		/** @var \StdClass $data */
