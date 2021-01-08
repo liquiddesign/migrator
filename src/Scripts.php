@@ -24,7 +24,7 @@ class Scripts
 		$event->getIO()->write($sql);
 		
 		if (!\trim($sql)) {
-			$event->getIO()->write('Everything is synchronized. Good job!');
+			$event->getIO()->write('Nothing to dump!');
 			
 			return;
 		}
