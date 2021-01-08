@@ -52,6 +52,12 @@ class Scripts
 		$sql = $migrator->dumpAlters();
 		$event->getIO()->write($sql);
 		
+		if (!\trim($sql)) {
+			$event->getIO()->write('Everything is synchronized. Good job!');
+			
+			return;
+		}
+		
 		if (!$event->getIO()->askConfirmation("Execute SQL command? (n)", false)) {
 			return;
 		}
