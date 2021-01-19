@@ -98,7 +98,7 @@ class Column implements ISqlEntity
 		
 		if ($this->column->getPropertyName() !== null && \class_exists($this->column->getEntityClass())) {
 			$this->column->getDefault();
-			$defaultValue = (new \ReflectionClass($this->column->getEntityClass()))->getDefaultProperties()[$this->column->getPropertyName()];
+			$defaultValue = (new \ReflectionClass($this->column->getEntityClass()))->getDefaultProperties()[$this->column->getPropertyName()] ?? null;
 			
 			if ($defaultValue !== null) {
 				if (\is_bool($defaultValue)) {
