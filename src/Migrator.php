@@ -266,8 +266,8 @@ class Migrator
 					'target' => \substr($match[4] != "" ? $match[4] : $match[3],1, -1),
 					'sourceKey' => \substr($source[0][0],1, -1),
 					'targetKey' => \substr($target[0][0],1, -1),
-					'onDelete' => $match[6] ?: 'RESTRICT',
-					'onUpdate' => $match[7] ?: 'RESTRICT',
+					'onDelete' => $match[6] ?? 'RESTRICT',
+					'onUpdate' => $match[7] ?? 'RESTRICT',
 				];
 			}
 		}
