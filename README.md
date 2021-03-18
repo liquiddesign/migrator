@@ -10,3 +10,7 @@ Migrátor je nástroj pro synchronizaci StORM Entit and SQL databáze
 ## TODO
 - update values befera CHANGE null -> not null = 
 UPDATE `xx` SET `yyy`=DEF VALUE  WHERE `yyy` IS NULL;
+
+- update values before constraints if there any records
+
+UPDATE `eshop_payment` SET fk_currency='CZK' WHERE fk_currency=''
