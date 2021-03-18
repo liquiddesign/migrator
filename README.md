@@ -8,3 +8,5 @@ Migrátor je nástroj pro synchronizaci StORM Entit and SQL databáze
 ☞ [Dropbox paper](https://paper.dropbox.com/doc/Migrator--A61fiZxTLsIh5pJTlZ5vgzEXAg-I9c1x2XfhJrbHQnKjwP2x)
 
 ## TODO
+- update values befera CHANGE null -> not null = 
+UPDATE `xx` SET `yyy`=DEF VALUE  WHERE `yyy` IS NULL;
