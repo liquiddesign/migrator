@@ -3,6 +3,7 @@
 namespace Migrator;
 
 use Composer\Script\Event;
+use Nette\DI\Container;
 use StORM\DIConnection;
 
 class Scripts
@@ -17,7 +18,7 @@ class Scripts
 		
 		$class = $arguments[0] ?? '\App\Bootstrap';
 		
-		$container = \method_exists($class, 'createContainer') ? $class::createContainer() : $class::boot()->createContainer();
+		$container = static::getDIContainer($arguments);
 		
 		$migrator = $container->getByType(Migrator::class);
 		$sql = $migrator->dumpStructure();
@@ -44,9 +45,7 @@ class Scripts
 	{
 		$arguments = $event->getArguments();
 		
-		$class = $arguments[0] ?? '\App\Bootstrap';
-		
-		$container = \method_exists($class, 'createContainer') ? $class::createContainer() : $class::boot()->createContainer();
+		$container = static::getDIContainer($arguments);
 		
 		$migrator = $container->getByType(Migrator::class);
 		$sql = $migrator->dumpAlters();
@@ -63,5 +62,18 @@ class Scripts
 		}
 
 		$container->getByType(DIConnection::class)->query($sql);
+	}
+	
+	private static function getDIContainer(array $arguments): Container
+	{
+		$class = '\App\Bootstrap';
+		
+		if (isset($arguments[0]) && \is_file(\dirname(__DIR__, 4) . '/' . $arguments[0])) {
+			return require_once(\dirname(__DIR__, 4) . '/' . $arguments[0]);
+		} elseif (isset($arguments[0])) {
+			$class = $arguments[0];
+		}
+		
+		return \method_exists($class, 'createContainer') ? $class::createContainer() : $class::boot()->createContainer();
 	}
 }
