@@ -70,7 +70,7 @@ class Scripts
 		
 		if (isset($arguments[0]) && \is_file(\dirname(__DIR__, 4) . '/' . $arguments[0])) {
 			return require_once(\dirname(__DIR__, 4) . '/' . $arguments[0]);
-		} elseif (isset($arguments[0])) {
+		} elseif (isset($arguments[0]) && \class_exists($arguments[0])) {
 			$class = $arguments[0];
 		}
 		
