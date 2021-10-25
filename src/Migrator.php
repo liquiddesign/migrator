@@ -251,21 +251,23 @@ class Migrator
 	public function getConstraints(string $tableName): array
 	{
 		$rows = [];
-		$pattern = '(?:`(?:[^`]|``)+`|"(?:[^"]|"")+")';
+		$pn = '(?:`(?:[^`]|``)+`|"(?:[^"]|"")+")';
 		$onActions = 'RESTRICT|NO ACTION|CASCADE|SET NULL|SET DEFAULT';
 		$createTable = $this->getConnection()->query("SHOW CREATE TABLE $tableName")->fetchColumn(1);
 		
 		if ($createTable) {
-			\preg_match_all("~CONSTRAINT ($pattern) FOREIGN KEY ?\\(((?:$pattern,? ?)+)\\) REFERENCES ($pattern)(?:\\.($pattern))? \\(((?:$pattern,? ?)+)\\)(?: ON DELETE ($onActions))?(?: ON UPDATE ($onActions))?~", $createTable, $matches, \PREG_SET_ORDER);
+			$pattern = "~CONSTRAINT ($pn) FOREIGN KEY ?\\(((?:$pn,? ?)+)\\) REFERENCES ($pn)(?:\\.($pn))? \\(((?:$pn,? ?)+)\\)(?: ON DELETE ($onActions))?(?: ON UPDATE ($onActions))?~";
+			\preg_match_all($pattern, $createTable, $matches, \PREG_SET_ORDER);
+			
 			foreach ($matches as $match) {
-				\preg_match_all("~$pattern~", $match[2], $source);
-				\preg_match_all("~$pattern~", $match[5], $target);
+				\preg_match_all("~$pn~", $match[2], $source);
+				\preg_match_all("~$pn~", $match[5], $target);
 				$rows[] = (object) [
-					'name' => \substr($match[1],1, -1),
+					'name' => \substr($match[1], 1, -1),
 					'source' => $tableName,
-					'target' => \substr($match[4] != "" ? $match[4] : $match[3],1, -1),
-					'sourceKey' => \substr($source[0][0],1, -1),
-					'targetKey' => \substr($target[0][0],1, -1),
+					'target' => \substr($match[4] !== '' ? $match[4] : $match[3], 1, -1),
+					'sourceKey' => \substr($source[0][0], 1, -1),
+					'targetKey' => \substr($target[0][0], 1, -1),
 					'onDelete' => $match[6] ?? 'RESTRICT',
 					'onUpdate' => $match[7] ?? 'RESTRICT',
 				];
@@ -679,6 +681,7 @@ class Migrator
 					$parsed[$newName]->setName($newName);
 					
 					$columns = [];
+					
 					foreach ($index->getColumns() as $columnName) {
 						$columns[] = $structure->getColumn($columnName)->hasMutations() ? $columnName . $mutationSuffix : $columnName;
 					}

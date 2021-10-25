@@ -46,7 +46,9 @@ class MigratorDI extends \Nette\DI\CompilerExtension
 		
 		/** @var \Nette\DI\ContainerBuilder $builder */
 		$builder = $this->getContainerBuilder();
-		$schemaManager = $builder->addDefinition($this->prefix('migrator'))->setType(Migrator::class)->setAutowired(true);
+		/** @var \Nette\DI\Definitions\ServiceDefinition $schemaManager */
+		$schemaManager = $builder->addDefinition($this->prefix('migrator'));
+		$schemaManager->setType(Migrator::class)->setAutowired(true);
 		
 		$schemaManager->addSetup('setDefaultEngine', [$configuration->engine]);
 		$schemaManager->addSetup('setDefaultTypeMap', [$configuration->typeMap]);
@@ -54,7 +56,5 @@ class MigratorDI extends \Nette\DI\CompilerExtension
 		$schemaManager->addSetup('setDefaultPrimaryKeyLengthMap', [$configuration->primaryKeyLengthMap]);
 		$schemaManager->addSetup('setDefaultPrimaryKeyConfiguration', [(array) $configuration->primaryKey]);
 		$schemaManager->addSetup('setDefaultConstraintActions', [$configuration->constraintActionOnUpdate, $configuration->constraintActionOnDelete]);
-		
-		return;
 	}
 }
