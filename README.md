@@ -1,16 +1,8 @@
 # ⇄ Migrátor
 Migrátor je nástroj pro synchronizaci StORM Entit and SQL databáze
 
-![Travis](https://travis-ci.org/liquiddesign/migrator.svg?branch=master)
-![Release](https://img.shields.io/github/v/release/liquiddesign/migrator.svg?1)
+![Actions](https://github.com/liquiddesign/migrator/actions/workflows/php.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/liquiddesign/migrator)
 
 ## Dokumentace
 ☞ [Dropbox paper](https://paper.dropbox.com/doc/Migrator--A61fiZxTLsIh5pJTlZ5vgzEXAg-I9c1x2XfhJrbHQnKjwP2x)
-
-## TODO
-- update values befera CHANGE null -> not null = 
-UPDATE `xx` SET `yyy`=DEF VALUE  WHERE `yyy` IS NULL;
-
-- update values before constraints if there any records
-
-UPDATE `eshop_payment` SET fk_currency='CZK' WHERE fk_currency=''
