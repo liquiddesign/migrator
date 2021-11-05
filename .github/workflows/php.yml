@@ -1,4 +1,4 @@
-name: Analyse
+name: Analysis
 
 on:
   push:
