@@ -10,13 +10,13 @@
     "php": ">=7.4.0",
     "ext-pdo": "*",
     "ext-json": "*",
-    "liquiddesign/storm":"@dev",
-    "nette/caching":"^3.0",
-    "composer/composer":"^1.0"
+    "liquiddesign/storm":"~1.0",
+    "nette/caching":"~3.0",
+    "composer/composer":"~1.0"
   },
   "require-dev":
   {
-    "nette/tester":"^2.0",
+    "nette/tester":"~2.0",
     "phpstan/phpstan":"^0",
     "liquiddesign/codestyle": "@dev"
   },
