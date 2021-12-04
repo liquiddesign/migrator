@@ -121,7 +121,7 @@ class Column implements ISqlEntity
 		$nullable = $this->column->isNullable() ? ' NULL' : ' NOT NULL';
 		$noWrap = \is_numeric($this->column->getDefault()) || $this->column->getDefault() === 'CURRENT_TIMESTAMP';
 		$default = $this->column->getDefault() !== null ? ' DEFAULT ' . ($noWrap ? $this->column->getDefault() : "'".$this->column->getDefault()."'") : '';
-		$attribute = $this->column->getAttribute() ? ' ' . $this->column->getAttribute() : '';
+		//$attribute = $this->column->getAttribute() ? ' ' . $this->column->getAttribute() : '';
 		$extra = $this->column->isAutoincrement() ? ' AUTO_INCREMENT' : ($this->column->getExtra() ? ' ' . $this->column->getExtra() : '');
 		$comment = $this->column->getComment() ? ' COMMENT ' . $this->connection->quote($this->column->getComment()) : '';
 		
@@ -134,7 +134,7 @@ class Column implements ISqlEntity
 		$sql .= "$q$name$q";
 		
 		if ($alterType !== Migrator::ALTER_DROP) {
-			$sql .= " $type$length$nullable$default$attribute$extra$comment";
+			$sql .= " $type$length$nullable$default$extra$comment";
 		}
 		
 		return $withPrefix ? $sql . ';' . \PHP_EOL : $sql;
