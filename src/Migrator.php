@@ -201,7 +201,7 @@ class Migrator
 			'comment' => 'this.COLUMN_COMMENT',
 			$this->connection->quoteIdentifier('primaryKey') => "IF(this.COLUMN_KEY = 'PRI',1,0)",
 			$this->connection->quoteIdentifier('autoincrement') => "IF(this.EXTRA = 'AUTO_INCREMENT',1,0)",
-			$this->connection->quoteIdentifier('extra') => 'this.EXTRA',
+			$this->connection->quoteIdentifier('extra') => "IF(this.EXTRA = 'AUTO_INCREMENT','',this.EXTRA)",
 			$this->connection->quoteIdentifier('collate') => 'this.COLLATION_NAME',
 			$this->connection->quoteIdentifier('charset') => 'this.CHARACTER_SET_NAME',
 		];

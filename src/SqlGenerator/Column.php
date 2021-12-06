@@ -16,6 +16,7 @@ class Column implements ISqlEntity
 		'comment',
 		'collate',
 		'charset',
+		'autoincrement',
 	];
 	
 	private \StORM\Meta\Column $column;
@@ -58,6 +59,7 @@ class Column implements ISqlEntity
 	{
 		$props = $this->column->jsonSerialize();
 		$props['length'] = (string) $props['length'];
+		$props['autoincrement'] = (int) $props['autoincrement'];
 		
 		return \array_intersect_key($props, \array_flip(self::SQL_PROPERTIES));
 	}
@@ -121,7 +123,7 @@ class Column implements ISqlEntity
 		$nullable = $this->column->isNullable() ? ' NULL' : ' NOT NULL';
 		$noWrap = \is_numeric($this->column->getDefault()) || $this->column->getDefault() === 'CURRENT_TIMESTAMP';
 		$default = $this->column->getDefault() !== null ? ' DEFAULT ' . ($noWrap ? $this->column->getDefault() : "'".$this->column->getDefault()."'") : '';
-		$extra = $this->column->isAutoincrement() ? ' AUTO_INCREMENT' : ($this->column->getExtra() ? ' ' . $this->column->getExtra() : '');
+		$extra = $this->column->isAutoincrement() ? ' UNIQUE AUTO_INCREMENT' : ($this->column->getExtra() ? ' ' . $this->column->getExtra() : '');
 		$comment = $this->column->getComment() ? ' COMMENT ' . $this->connection->quote($this->column->getComment()) : '';
 		
 		$sql = $withPrefix ? "ALTER TABLE $q$table$q $alterType " : '';
