@@ -18,7 +18,7 @@
   {
     "nette/tester":"~2.0",
     "phpstan/phpstan":"^0",
-    "liquiddesign/codestyle": "@dev"
+    "liquiddesign/codestyle": "~1.0"
   },
   "scripts": {
     "phpstan": "phpstan analyse --memory-limit 1G -c phpstan.neon",

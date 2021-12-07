@@ -243,7 +243,7 @@ class Migrator
 		
 		return \reset($columns) ?: null;
 	}
-	
+
 	/**
 	 * @param string $tableName
 	 * @return \StORM\Meta\Constraint[]
