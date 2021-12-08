@@ -44,6 +44,7 @@ class Migrator
 	 */
 	private array $defaultLengthMap = [
 		'int' => 11,
+		'bigint' => 20,
 		'varchar' => 255,
 		'tinyint' => 1,
 	];
@@ -53,6 +54,7 @@ class Migrator
 	 */
 	private array $defaultPrimaryKeyLengthMap = [
 		'int' => 11,
+		'bigint' => 20,
 		'varchar' => 32,
 	];
 	

@@ -60,6 +60,14 @@ class Scripts
 		}
 
 		$container->getByType(DIConnection::class)->query($sql);
+		
+		$sql = $migrator->dumpAlters();
+		
+		if (!\trim($sql)) {
+			$event->getIO()->write('Everything is synchronized. Good job!');
+		} else {
+			$event->getIO()->writeError(' Synchronization failed!');
+		}
 	}
 	
 	private static function getDIContainer(array $arguments): Container

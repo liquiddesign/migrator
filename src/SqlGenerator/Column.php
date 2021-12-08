@@ -123,7 +123,7 @@ class Column implements ISqlEntity
 		$nullable = $this->column->isNullable() ? ' NULL' : ' NOT NULL';
 		$noWrap = \is_numeric($this->column->getDefault()) || $this->column->getDefault() === 'CURRENT_TIMESTAMP';
 		$default = $this->column->getDefault() !== null ? ' DEFAULT ' . ($noWrap ? $this->column->getDefault() : "'".$this->column->getDefault()."'") : '';
-		$extra = $this->column->isAutoincrement() ? ' UNIQUE AUTO_INCREMENT' : ($this->column->getExtra() ? ' ' . $this->column->getExtra() : '');
+		$extra = $this->column->isAutoincrement() ? ' '. ($this->column->isPrimaryKey() ? '' : 'UNIQUE ') . 'AUTO_INCREMENT' : ($this->column->getExtra() ? ' ' . $this->column->getExtra() : '');
 		$comment = $this->column->getComment() ? ' COMMENT ' . $this->connection->quote($this->column->getComment()) : '';
 		
 		$sql = $withPrefix ? "ALTER TABLE $q$table$q $alterType " : '';

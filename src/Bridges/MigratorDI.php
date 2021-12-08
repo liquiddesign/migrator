@@ -21,11 +21,13 @@ class MigratorDI extends \Nette\DI\CompilerExtension
 			]),
 			'lengthMap' => Expect::arrayOf('mixed')->default([
 				'int' => 11,
+				'bigint' => 20,
 				'varchar' => 255,
 				'tinyint' => 1,
 			]),
 			'primaryKeyLengthMap' => Expect::arrayOf('int')->default([
 				'int' => 11,
+				'bigint' => 20,
 				'varchar' => 32,
 			]),
 			'primaryKey' => Expect::structure([
