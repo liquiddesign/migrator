@@ -25,5 +25,10 @@
     "phpcs": "phpcs --standard=ruleset.xml src",
     "phpcsfix": "phpcbf --standard=ruleset.xml src",
     "tester": "tester tests/*.phpt -j 0 -c tests/php.ini --setup tests/setup.php"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   }
 }

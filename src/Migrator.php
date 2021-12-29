@@ -109,6 +109,10 @@ class Migrator
 	 */
 	public function getDefaultPrimaryKeyLength(string $sqlType): string
 	{
+		if (isset($this->defaultPrimaryKeyLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19')) {
+			unset($this->defaultPrimaryKeyLengthMap['int']);
+		}
+		
 		return $this->defaultPrimaryKeyLengthMap[$sqlType] ?? '';
 	}
 	
@@ -126,6 +130,10 @@ class Migrator
 	 */
 	public function getDefaultLength(string $sqlType): ?string
 	{
+		if (isset($this->defaultLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19')) {
+			unset($this->defaultLengthMap['int']);
+		}
+		
 		return $this->defaultLengthMap[$sqlType] ?? null;
 	}
 	
@@ -203,7 +211,7 @@ class Migrator
 			'comment' => 'this.COLUMN_COMMENT',
 			$this->connection->quoteIdentifier('primaryKey') => "IF(this.COLUMN_KEY = 'PRI',1,0)",
 			$this->connection->quoteIdentifier('autoincrement') => "IF(this.EXTRA = 'AUTO_INCREMENT',1,0)",
-			$this->connection->quoteIdentifier('extra') => "IF(this.EXTRA = 'AUTO_INCREMENT','',this.EXTRA)",
+			$this->connection->quoteIdentifier('extra') => "IF(this.EXTRA IN ('AUTO_INCREMENT','DEFAULT_GENERATED'),'',this.EXTRA)",
 			$this->connection->quoteIdentifier('collate') => 'this.COLLATION_NAME',
 			$this->connection->quoteIdentifier('charset') => 'this.CHARACTER_SET_NAME',
 		];
@@ -937,6 +945,11 @@ class Migrator
 		}
 		
 		return $sql;
+	}
+	
+	private function getSqlVersion(): string
+	{
+		return $this->getConnection()->getLink()->getAttribute(\PDO::ATTR_SERVER_VERSION);
 	}
 
 	private function getEntityClass(string $repositoryName): string
