@@ -211,7 +211,7 @@ class Migrator
 			'comment' => 'this.COLUMN_COMMENT',
 			$this->connection->quoteIdentifier('primaryKey') => "IF(this.COLUMN_KEY = 'PRI',1,0)",
 			$this->connection->quoteIdentifier('autoincrement') => "IF(this.EXTRA = 'AUTO_INCREMENT',1,0)",
-			$this->connection->quoteIdentifier('extra') => "IF(this.EXTRA IN ('AUTO_INCREMENT','DEFAULT_GENERATED'),'',this.EXTRA)",
+			$this->connection->quoteIdentifier('extra') => "IF(this.EXTRA IN ('AUTO_INCREMENT'),'',this.EXTRA)",
 			$this->connection->quoteIdentifier('collate') => 'this.COLLATION_NAME',
 			$this->connection->quoteIdentifier('charset') => 'this.CHARACTER_SET_NAME',
 		];
@@ -238,6 +238,7 @@ class Migrator
 			
 			$data->length = $length[1] ?? null;
 			$data->autoincrement = (bool) $data->autoincrement;
+			$data->extra = \trim(\str_replace('DEFAULT_GENERATED', '', $data->extra));
 			
 			$column->loadFromArray(Helpers::toArrayRecursive($data));
 			
@@ -278,8 +279,8 @@ class Migrator
 					'target' => \substr($match[4] !== '' ? $match[4] : $match[3], 1, -1),
 					'sourceKey' => \substr($source[0][0], 1, -1),
 					'targetKey' => \substr($target[0][0], 1, -1),
-					'onDelete' => $match[6] ?? 'RESTRICT',
-					'onUpdate' => $match[7] ?? 'RESTRICT',
+					'onDelete' => !isset($match[6]) || $match[6] === 'RESTRICT' ? 'NO ACTION' : $match[6],
+					'onUpdate' => !isset($match[7]) || $match[7] === 'RESTRICT' ? 'NO ACTION' : $match[6],
 				];
 			}
 		}
