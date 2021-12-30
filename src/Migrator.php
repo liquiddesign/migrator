@@ -74,6 +74,8 @@ class Migrator
 		'propertyType' => 'string',
 	];
 	
+	private string $sqlDefaultAction;
+	
 	public function __construct(DIConnection $connection, SchemaManager $schemaManager)
 	{
 		$this->connection = $connection;
@@ -254,7 +256,7 @@ class Migrator
 		
 		return \reset($columns) ?: null;
 	}
-
+	
 	/**
 	 * @param string $tableName
 	 * @return \StORM\Meta\Constraint[]
@@ -265,6 +267,7 @@ class Migrator
 		$pn = '(?:`(?:[^`]|``)+`|"(?:[^"]|"")+")';
 		$onActions = 'RESTRICT|NO ACTION|CASCADE|SET NULL|SET DEFAULT';
 		$createTable = $this->getConnection()->query("SHOW CREATE TABLE $tableName")->fetchColumn(1);
+		$defaultAction = $this->getSqlDefaultAction();
 		
 		if ($createTable) {
 			$pattern = "~CONSTRAINT ($pn) FOREIGN KEY ?\\(((?:$pn,? ?)+)\\) REFERENCES ($pn)(?:\\.($pn))? \\(((?:$pn,? ?)+)\\)(?: ON DELETE ($onActions))?(?: ON UPDATE ($onActions))?~";
@@ -273,14 +276,15 @@ class Migrator
 			foreach ($matches as $match) {
 				\preg_match_all("~$pn~", $match[2], $source);
 				\preg_match_all("~$pn~", $match[5], $target);
+				
 				$rows[] = (object) [
 					'name' => \substr($match[1], 1, -1),
 					'source' => $tableName,
 					'target' => \substr($match[4] !== '' ? $match[4] : $match[3], 1, -1),
 					'sourceKey' => \substr($source[0][0], 1, -1),
 					'targetKey' => \substr($target[0][0], 1, -1),
-					'onDelete' => !isset($match[6]) || $match[6] === 'RESTRICT' ? 'NO ACTION' : $match[6],
-					'onUpdate' => !isset($match[7]) || $match[7] === 'RESTRICT' ? 'NO ACTION' : $match[6],
+					'onDelete' => $match[6] ?? $defaultAction,
+					'onUpdate' => $match[7] ?? $defaultAction,
 				];
 			}
 		}
@@ -478,12 +482,12 @@ class Migrator
 		$config = $this->defaultPrimaryKeyConfiguration;
 		
 		$column = new Column($class, null);
-
+		
 		if (isset($config['propertyType'])) {
 			$column->setPropertyType($config['propertyType']);
 			unset($config['propertyType']);
 		}
-
+		
 		$column->setPrimaryKey(true);
 		$column->loadFromArray($config);
 		
@@ -618,7 +622,7 @@ class Migrator
 		
 		return '';
 	}
-
+	
 	protected function compare(ISqlEntity $entity, ISqlEntity $toCompareEntity): bool
 	{
 		return $entity->getSqlProperties() === $toCompareEntity->getSqlProperties();
@@ -952,7 +956,12 @@ class Migrator
 	{
 		return $this->getConnection()->getLink()->getAttribute(\PDO::ATTR_SERVER_VERSION);
 	}
-
+	
+	private function getSqlDefaultAction(): string
+	{
+		return $this->sqlDefaultAction ?? $this->sqlDefaultAction = \version_compare($this->getSqlVersion(), '8.0.0') ? 'NO ACTION' : 'RESTRICT';
+	}
+	
 	private function getEntityClass(string $repositoryName): string
 	{
 		return Structure::getEntityClassFromRepositoryClass(\get_class($this->connection->findRepositoryByName($repositoryName)));
