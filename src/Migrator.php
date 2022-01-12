@@ -24,6 +24,11 @@ class Migrator
 	public const ALTER_ADD = 'ADD';
 	public const NULL = 'null';
 	
+	/**
+	 * @var callable[]
+	 */
+	public array $onCompareFail = [];
+	
 	private \StORM\DIConnection $connection;
 	
 	private string $defaultCharset;
@@ -76,11 +81,6 @@ class Migrator
 	];
 	
 	private string $sqlDefaultAction;
-	
-	/**
-	 * @var callable[]
-	 */
-	private array $onCompareFail = [];
 	
 	public function __construct(DIConnection $connection, SchemaManager $schemaManager)
 	{
