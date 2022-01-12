@@ -5,6 +5,7 @@ namespace Migrator;
 use Migrator\SqlGenerator\ISqlEntity;
 use Nette\Caching\Cache;
 use Nette\Caching\Storages\DevNullStorage;
+use Nette\Utils\Arrays;
 use StORM\DIConnection;
 use StORM\Helpers;
 use StORM\Meta\Column;
@@ -76,11 +77,21 @@ class Migrator
 	
 	private string $sqlDefaultAction;
 	
+	/**
+	 * @var callable[]
+	 */
+	private array $onCompareFail = [];
+	
 	public function __construct(DIConnection $connection, SchemaManager $schemaManager)
 	{
 		$this->connection = $connection;
 		$this->schemaManager = $schemaManager;
 		$this->defaultCharset = (string) $connection->rows()->firstValue("CHARSET('')");
+		
+		if ($this->defaultCharset === 'utf8mb3') {
+			$this->defaultCharset = 'utf8';
+		}
+		
 		$this->defaultCollation = (string) $connection->rows()->firstValue("COLLATION('')");
 	}
 	
@@ -625,7 +636,13 @@ class Migrator
 	
 	protected function compare(ISqlEntity $entity, ISqlEntity $toCompareEntity): bool
 	{
-		return $entity->getSqlProperties() === $toCompareEntity->getSqlProperties();
+		$match = $entity->getSqlProperties() === $toCompareEntity->getSqlProperties();
+		
+		if ($match) {
+			Arrays::invoke($this->onCompareFail, \get_class($entity), $entity->getSqlProperties(), $toCompareEntity->getSqlProperties());
+		}
+		
+		return $match;
 	}
 	
 	/**
