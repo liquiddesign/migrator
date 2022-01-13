@@ -122,7 +122,7 @@ class Migrator
 	 */
 	public function getDefaultPrimaryKeyLength(string $sqlType): string
 	{
-		if (isset($this->defaultPrimaryKeyLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19')) {
+		if (isset($this->defaultPrimaryKeyLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19', '>=')) {
 			unset($this->defaultPrimaryKeyLengthMap['int']);
 		}
 		
@@ -143,11 +143,8 @@ class Migrator
 	 */
 	public function getDefaultLength(string $sqlType): ?string
 	{
-		if (isset($this->defaultLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19')) {
+		if (isset($this->defaultLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19', '>=')) {
 			unset($this->defaultPrimaryKeyLengthMap['int']);
-			dump($this->getSqlVersion());
-			dump(\version_compare($this->getSqlVersion(), '8.0.19'));
-			die();
 		}
 		
 		return $this->defaultLengthMap[$sqlType] ?? null;
@@ -979,7 +976,7 @@ class Migrator
 	
 	private function getSqlDefaultAction(): string
 	{
-		return $this->sqlDefaultAction ?? $this->sqlDefaultAction = \version_compare($this->getSqlVersion(), '8.0.0') ? 'NO ACTION' : 'RESTRICT';
+		return $this->sqlDefaultAction ?? $this->sqlDefaultAction = \version_compare($this->getSqlVersion(), '8.0.0', '>=') ? 'NO ACTION' : 'RESTRICT';
 	}
 	
 	private function getEntityClass(string $repositoryName): string
