@@ -144,7 +144,10 @@ class Migrator
 	public function getDefaultLength(string $sqlType): ?string
 	{
 		if (isset($this->defaultLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19')) {
-			unset($this->defaultLengthMap['int']);
+			unset($this->defaultPrimaryKeyLengthMap['int']);
+			dump($this->getSqlVersion());
+			dump(\version_compare($this->getSqlVersion(), '8.0.19'));
+			die();
 		}
 		
 		return $this->defaultLengthMap[$sqlType] ?? null;
