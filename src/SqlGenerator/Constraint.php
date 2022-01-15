@@ -57,7 +57,7 @@ class Constraint implements ISqlEntity
 	
 	public function getDrop(): string
 	{
-		return 'ALTER TABLE '. $this->connection->quoteIdentifier($this->tableName).' DROP FOREIGN KEY '. $this->connection->quoteIdentifier($this->constraint->getName()) . ';' . \PHP_EOL;
+		return 'ALTER TABLE ' . $this->connection->quoteIdentifier($this->tableName) . ' DROP FOREIGN KEY ' . $this->connection->quoteIdentifier($this->constraint->getName()) . ';' . \PHP_EOL;
 	}
 	
 	public function getChange(string $sourceConstraintName): string

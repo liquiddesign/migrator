@@ -28,7 +28,7 @@ class Scripts
 			return;
 		}
 		
-		if (!$event->getIO()->askConfirmation("Execute SQL command? (n)", false)) {
+		if (!$event->getIO()->askConfirmation('Execute SQL command? (n)', false)) {
 			return;
 		}
 
@@ -55,7 +55,7 @@ class Scripts
 			return;
 		}
 		
-		if (!$event->getIO()->askConfirmation("Execute SQL command? (n)", false)) {
+		if (!$event->getIO()->askConfirmation('Execute SQL command? (n)', false)) {
 			return;
 		}
 

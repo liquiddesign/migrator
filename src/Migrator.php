@@ -144,7 +144,7 @@ class Migrator
 	public function getDefaultLength(string $sqlType): ?string
 	{
 		if (isset($this->defaultLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19', '>=')) {
-			unset($this->defaultPrimaryKeyLengthMap['int']);
+			unset($this->defaultLengthMap['int']);
 		}
 		
 		return $this->defaultLengthMap[$sqlType] ?? null;
@@ -246,7 +246,7 @@ class Migrator
 			$column->setPrimaryKey((bool) $data->primaryKey);
 			$data->nullable = (bool) $data->nullable;
 			$length = null;
-			\preg_match("/.+\((.*?)\)/", $data->columnType, $length);
+			\preg_match('/.+\((.*?)\)/', $data->columnType, $length);
 			unset($data->columnType, $data->primaryKey);
 			
 			$data->length = $length[1] ?? null;
@@ -359,9 +359,9 @@ class Migrator
 	{
 		$select = [
 			'name' => 'this.TRIGGER_NAME',
-			'manipulation' => "this.EVENT_MANIPULATION",
-			'timing' => "this.ACTION_TIMING",
-			'statement' => "this.ACTION_STATEMENT",
+			'manipulation' => 'this.EVENT_MANIPULATION',
+			'timing' => 'this.ACTION_TIMING',
+			'statement' => 'this.ACTION_STATEMENT',
 		];
 		
 		$from = ['this' => 'INFORMATION_SCHEMA.TRIGGERS'];
@@ -579,7 +579,7 @@ class Migrator
 			$tableExists[$repositoryName] = $this->getTable($structure->getTable()->getName()) !== null;
 			
 			if ($tableExists[$repositoryName]) {
-				$sql .=$this->getSqlSyncTable($this->getTable($structure->getTable()->getName()), $structure->getTable(), $this->getColumns($structure->getTable()->getName()), $entityColumns);
+				$sql .= $this->getSqlSyncTable($this->getTable($structure->getTable()->getName()), $structure->getTable(), $this->getColumns($structure->getTable()->getName()), $entityColumns);
 			} else {
 				$sql .= $this->getSqlCreateTable($structure->getTable(), $entityColumns);
 			}

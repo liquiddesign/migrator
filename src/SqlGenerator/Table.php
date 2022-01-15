@@ -59,9 +59,9 @@ class Table implements ISqlEntity
 		}
 		
 		$sql .= ')';
-		$sql .= ' ENGINE = '.$this->table->getEngine();
-		$sql .= ', COLLATE = '.$this->table->getCollate();
-		$sql .= ', COMMENT = \''.$this->table->getComment().'\'';
+		$sql .= ' ENGINE = ' . $this->table->getEngine();
+		$sql .= ', COLLATE = ' . $this->table->getCollate();
+		$sql .= ', COMMENT = \'' . $this->table->getComment() . '\'';
 		$sql .= ';' . \PHP_EOL;
 		
 		return $sql;

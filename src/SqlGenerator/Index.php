@@ -44,7 +44,7 @@ class Index implements ISqlEntity
 	
 	public function getDrop(): string
 	{
-		return 'ALTER TABLE '. $this->connection->quoteIdentifier($this->tableName).' DROP KEY '. $this->connection->quoteIdentifier($this->index->getName()) . ';' . \PHP_EOL;
+		return 'ALTER TABLE ' . $this->connection->quoteIdentifier($this->tableName) . ' DROP KEY ' . $this->connection->quoteIdentifier($this->index->getName()) . ';' . \PHP_EOL;
 	}
 	
 	public function getChange(string $sourceIndexName): string

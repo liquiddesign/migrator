@@ -46,7 +46,7 @@ class Trigger implements ISqlEntity
 	
 	public function getDrop(?string $triggerName = null): string
 	{
-		return 'DROP TRIGGER '. $this->connection->quoteIdentifier($triggerName ?: $this->trigger->getName()) . ';' . \PHP_EOL;
+		return 'DROP TRIGGER ' . $this->connection->quoteIdentifier($triggerName ?: $this->trigger->getName()) . ';' . \PHP_EOL;
 	}
 	
 	public function getChange(string $sourceTriggerName): string
