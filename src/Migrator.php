@@ -124,6 +124,8 @@ class Migrator
 	{
 		if (isset($this->defaultPrimaryKeyLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19', '>=')) {
 			unset($this->defaultPrimaryKeyLengthMap['int']);
+			unset($this->defaultPrimaryKeyLengthMap['bigint']);
+			unset($this->defaultPrimaryKeyLengthMap['tinyint']);
 		}
 		
 		return $this->defaultPrimaryKeyLengthMap[$sqlType] ?? '';
@@ -571,11 +573,16 @@ class Migrator
 	{
 		$sql = '';
 		$tableExists = [];
+		$columnsByTableName = [];
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
+			
 			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
+			
 			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
+			$columnsByTableName[$structure->getTable()->getName()] = $entityColumns;
+			
 			$tableExists[$repositoryName] = $this->getTable($structure->getTable()->getName()) !== null;
 			
 			if ($tableExists[$repositoryName]) {
@@ -616,6 +623,15 @@ class Migrator
 						$sql .= $this->getSqlCreateTable($entityTable, $entityColumns);
 						$sql .= $this->getSqlAddMetas($entityTable, $entityConstraints, $entityIndexes, []);
 					} else {
+						// unset if key is defined column
+						if (isset($columnsByTableName[$relation->getVia()])) {
+							foreach (\array_keys($entityColumns) as $name) {
+								if (isset($columnsByTableName[$relation->getVia()][$name])) {
+									unset($entityColumns[$name]);
+								}
+							}
+						}
+						
 						$sql .= $this->getSqlSyncTable($this->getTable($nxnTableName), $entityTable, $this->getColumns($nxnTableName), $entityColumns);
 						$sql .= $this->getSqlSyncMetas($nxnTableName, $this->getConstraints($nxnTableName), $entityConstraints, $this->getIndexes($nxnTableName), $entityIndexes, [], []);
 					}
@@ -634,6 +650,11 @@ class Migrator
 		return '';
 	}
 	
+	public function getSqlVersion(): string
+	{
+		return $this->getConnection()->getLink()->getAttribute(\PDO::ATTR_SERVER_VERSION);
+	}
+
 	protected function compare(ISqlEntity $entity, ISqlEntity $toCompareEntity): bool
 	{
 		$match = $entity->getSqlProperties() === $toCompareEntity->getSqlProperties();
@@ -801,7 +822,6 @@ class Migrator
 	protected function getSqlSyncTable(Table $fromTable, Table $toTable, array $fromColumns, array $toColumns): string
 	{
 		$sql = '';
-		
 		$tableSql = new \Migrator\SqlGenerator\Table($this, $fromTable);
 		$entitySql = new \Migrator\SqlGenerator\Table($this, $toTable);
 		
@@ -967,11 +987,6 @@ class Migrator
 		}
 		
 		return $sql;
-	}
-	
-	private function getSqlVersion(): string
-	{
-		return $this->getConnection()->getLink()->getAttribute(\PDO::ATTR_SERVER_VERSION);
 	}
 	
 	private function getSqlDefaultAction(): string

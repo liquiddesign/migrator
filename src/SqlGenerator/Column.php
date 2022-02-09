@@ -61,9 +61,13 @@ class Column implements ISqlEntity
 		$props['length'] = (string) $props['length'];
 		$props['autoincrement'] = (int) $props['autoincrement'];
 		
+		if (\in_array($props['type'], ['int', 'tinyint', 'bigint']) && \version_compare($this->migrator->getSqlVersion(), '8.0.19', '>=')) {
+			$props['length'] = '';
+		}
+		
 		return \array_intersect_key($props, \array_flip(self::SQL_PROPERTIES));
 	}
-
+	
 	private function setDefaults(): void
 	{
 		if ($this->column->getPropertyType()) {
