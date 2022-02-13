@@ -55,7 +55,7 @@ class Index implements ISqlEntity
 	}
 	
 	/**
-	 * @return string[]
+	 * @return array<string>
 	 */
 	public function getSqlProperties(): array
 	{

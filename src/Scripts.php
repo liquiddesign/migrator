@@ -4,6 +4,7 @@ namespace Migrator;
 
 use Composer\Script\Event;
 use Nette\DI\Container;
+use Nette\Utils\Strings;
 use StORM\DIConnection;
 
 class Scripts
@@ -22,7 +23,7 @@ class Scripts
 		$sql = $migrator->dumpStructure();
 		$event->getIO()->write($sql);
 		
-		if (!\trim($sql)) {
+		if (!Strings::trim($sql)) {
 			$event->getIO()->write('Nothing to dump!');
 			
 			return;
@@ -49,7 +50,7 @@ class Scripts
 		$sql = $migrator->dumpAlters();
 		$event->getIO()->write($sql);
 		
-		if (!\trim($sql)) {
+		if (!Strings::trim($sql)) {
 			$event->getIO()->write('Everything is synchronized. Good job!');
 			
 			return;
@@ -63,14 +64,14 @@ class Scripts
 		
 		$sql = $migrator->dumpAlters();
 		
-		if (!\trim($sql)) {
+		if (!Strings::trim($sql)) {
 			$event->getIO()->write('Everything is synchronized. Good job!');
 		} else {
 			$event->getIO()->writeError(' Synchronization failed!');
 		}
 	}
 	
-	private static function getDIContainer(array $arguments): Container
+	protected static function getDIContainer(array $arguments): Container
 	{
 		if (isset($arguments[0]) && \is_file(\dirname(__DIR__, 4) . '/' . $arguments[0])) {
 			return require_once \dirname(__DIR__, 4) . '/' . $arguments[0];

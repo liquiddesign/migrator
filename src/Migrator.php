@@ -6,6 +6,7 @@ use Migrator\SqlGenerator\ISqlEntity;
 use Nette\Caching\Cache;
 use Nette\Caching\Storages\DevNullStorage;
 use Nette\Utils\Arrays;
+use Nette\Utils\Strings;
 use StORM\DIConnection;
 use StORM\Helpers;
 use StORM\Meta\Column;
@@ -25,7 +26,7 @@ class Migrator
 	public const NULL = 'null';
 	
 	/**
-	 * @var callable[]
+	 * @var array<callable>
 	 */
 	public array $onCompareFail = [];
 	
@@ -36,7 +37,7 @@ class Migrator
 	private string $defaultCollation;
 	
 	/**
-	 * @var string[]
+	 * @var array<string>
 	 */
 	private array $defaultTypeMap = [
 		'int' => 'int',
@@ -46,7 +47,7 @@ class Migrator
 	];
 	
 	/**
-	 * @var string[]|int[]
+	 * @var array<string>|array<int>
 	 */
 	private array $defaultLengthMap = [
 		'int' => 11,
@@ -56,7 +57,7 @@ class Migrator
 	];
 	
 	/**
-	 * @var string[]|int[]
+	 * @var array<string>|array<int>
 	 */
 	private array $defaultPrimaryKeyLengthMap = [
 		'int' => 11,
@@ -73,7 +74,7 @@ class Migrator
 	private \StORM\SchemaManager $schemaManager;
 	
 	/**
-	 * @var mixed[]
+	 * @var array<mixed>
 	 */
 	private array $defaultPrimaryKeyConfiguration = [
 		'name' => 'uuid',
@@ -101,7 +102,7 @@ class Migrator
 	}
 	
 	/**
-	 * @return string[]
+	 * @return array<string>
 	 */
 	public function getDefaultLengthMap(): array
 	{
@@ -109,7 +110,7 @@ class Migrator
 	}
 	
 	/**
-	 * @param string[] $defaultLengthMap
+	 * @param array<string> $defaultLengthMap
 	 */
 	public function setDefaultPrimaryKeyLengthMap(array $defaultLengthMap): void
 	{
@@ -132,7 +133,7 @@ class Migrator
 	}
 	
 	/**
-	 * @param string[] $defaultLengthMap
+	 * @param array<string> $defaultLengthMap
 	 */
 	public function setDefaultLengthMap(array $defaultLengthMap): void
 	{
@@ -195,7 +196,7 @@ class Migrator
 	}
 	
 	/**
-	 * @param string[] $defaultTypeMap
+	 * @param array<string> $defaultTypeMap
 	 */
 	public function setDefaultTypeMap(array $defaultTypeMap): void
 	{
@@ -203,7 +204,7 @@ class Migrator
 	}
 	
 	/**
-	 * @return string[]
+	 * @return array<string>
 	 */
 	public function getDefaultTypeMap(): array
 	{
@@ -213,7 +214,7 @@ class Migrator
 	/**
 	 * @param string $tableName
 	 * @param bool $onlyPrimary
-	 * @return \StORM\Meta\Column[]
+	 * @return array<\StORM\Meta\Column>
 	 */
 	public function getColumns(string $tableName, bool $onlyPrimary = false): array
 	{
@@ -253,7 +254,8 @@ class Migrator
 			
 			$data->length = $length[1] ?? null;
 			$data->autoincrement = (bool) $data->autoincrement;
-			$data->extra = \trim(\str_replace('DEFAULT_GENERATED', '', $data->extra));
+			
+			$data->extra = Strings::trim(Strings::replace($data->extra, 'DEFAULT_GENERATED', ''));
 			
 			$column->loadFromArray(Helpers::toArrayRecursive($data));
 			
@@ -272,7 +274,7 @@ class Migrator
 	
 	/**
 	 * @param string $tableName
-	 * @return \StORM\Meta\Constraint[]
+	 * @return array<\StORM\Meta\Constraint>
 	 */
 	public function getConstraints(string $tableName): array
 	{
@@ -291,11 +293,11 @@ class Migrator
 				\preg_match_all("~$pn~", $match[5], $target);
 				
 				$rows[] = (object) [
-					'name' => \substr($match[1], 1, -1),
+					'name' => Strings::substring($match[1], 1, -1),
 					'source' => $tableName,
-					'target' => \substr($match[4] !== '' ? $match[4] : $match[3], 1, -1),
-					'sourceKey' => \substr($source[0][0], 1, -1),
-					'targetKey' => \substr($target[0][0], 1, -1),
+					'target' => Strings::substring($match[4] !== '' ? $match[4] : $match[3], 1, -1),
+					'sourceKey' => Strings::substring($source[0][0], 1, -1),
+					'targetKey' => Strings::substring($target[0][0], 1, -1),
 					'onDelete' => $match[6] ?? $defaultAction,
 					'onUpdate' => $match[7] ?? $defaultAction,
 				];
@@ -317,7 +319,7 @@ class Migrator
 	/**
 	 * @param string $tableName
 	 * @param bool $skipPrimary
-	 * @return \StORM\Meta\Index[]
+	 * @return array<\StORM\Meta\Index>
 	 */
 	public function getIndexes(string $tableName, bool $skipPrimary = true): array
 	{
@@ -355,7 +357,7 @@ class Migrator
 	
 	/**
 	 * @param string $tableName
-	 * @return \StORM\Meta\Trigger[]
+	 * @return array<\StORM\Meta\Trigger>
 	 */
 	public function getTriggers(string $tableName): array
 	{
@@ -383,7 +385,7 @@ class Migrator
 	}
 	
 	/**
-	 * @return string[]
+	 * @return array<string>
 	 */
 	public function getTableNames(): array
 	{
@@ -394,7 +396,7 @@ class Migrator
 	}
 	
 	/**
-	 * @return \StORM\Meta\Table[]
+	 * @return array<\StORM\Meta\Table>
 	 */
 	public function getTables(): array
 	{
@@ -524,7 +526,7 @@ class Migrator
 			
 			$entityTable = $structure->getTable();
 			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
-			$tables[] = $entityTable->getName();
+			$tables[$entityTable->getName()] = $entityTable->getName();
 			
 			$sql .= $this->getSqlCreateTable($entityTable, $entityColumns);
 		}
@@ -668,9 +670,9 @@ class Migrator
 	
 	/**
 	 * @param \StORM\Meta\Table $table
-	 * @param \StORM\Meta\Constraint[] $constraints
-	 * @param \StORM\Meta\Index[] $indexes
-	 * @param \StORM\Meta\Trigger[] $triggers
+	 * @param array<\StORM\Meta\Constraint> $constraints
+	 * @param array<\StORM\Meta\Index> $indexes
+	 * @param array<\StORM\Meta\Trigger> $triggers
 	 */
 	protected function getSqlAddMetas(Table $table, array $constraints = [], array $indexes = [], array $triggers = []): string
 	{
@@ -693,9 +695,9 @@ class Migrator
 	}
 	
 	/**
-	 * @param \StORM\Meta\Column[] $columns
-	 * @param string[] $mutations
-	 * @return \StORM\Meta\Column[] $columns
+	 * @param array<\StORM\Meta\Column> $columns
+	 * @param array<string> $mutations
+	 * @return array<\StORM\Meta\Column> $columns
 	 */
 	protected function parseColumns(array $columns, array $mutations): array
 	{
@@ -717,10 +719,10 @@ class Migrator
 	}
 	
 	/**
-	 * @param \StORM\Meta\Index[] $indexes
-	 * @param string[] $mutations
+	 * @param array<\StORM\Meta\Index> $indexes
+	 * @param array<string> $mutations
 	 * @param \StORM\Meta\Structure $structure
-	 * @return \StORM\Meta\Index[] $indexes
+	 * @return array<\StORM\Meta\Index> $indexes
 	 */
 	protected function parseIndexes(array $indexes, array $mutations, Structure $structure): array
 	{
@@ -751,7 +753,7 @@ class Migrator
 	
 	/**
 	 * @param \StORM\Meta\RelationNxN $relation
-	 * @return mixed[]
+	 * @return array<mixed>
 	 */
 	protected function parseNxNRelation(RelationNxN $relation): array
 	{
@@ -804,7 +806,7 @@ class Migrator
 	
 	/**
 	 * @param \StORM\Meta\Table $table
-	 * @param \StORM\Meta\Column[] $columns
+	 * @param array<\StORM\Meta\Column> $columns
 	 */
 	protected function getSqlCreateTable(Table $table, array $columns): string
 	{
@@ -816,8 +818,8 @@ class Migrator
 	/**
 	 * @param \StORM\Meta\Table $fromTable
 	 * @param \StORM\Meta\Table $toTable
-	 * @param \StORM\Meta\Column[] $fromColumns
-	 * @param \StORM\Meta\Column[] $toColumns
+	 * @param array<\StORM\Meta\Column> $fromColumns
+	 * @param array<\StORM\Meta\Column> $toColumns
 	 */
 	protected function getSqlSyncTable(Table $fromTable, Table $toTable, array $fromColumns, array $toColumns): string
 	{
@@ -861,12 +863,12 @@ class Migrator
 	
 	/**
 	 * @param string $fromTableName
-	 * @param \StORM\Meta\Constraint[] $fromConstraints
-	 * @param \StORM\Meta\Constraint[] $toConstraints
-	 * @param \StORM\Meta\Index[] $fromIndexes
-	 * @param \StORM\Meta\Index[] $toIndexes
-	 * @param \StORM\Meta\Trigger[] $fromTriggers
-	 * @param \StORM\Meta\Trigger[] $toTriggers
+	 * @param array<\StORM\Meta\Constraint> $fromConstraints
+	 * @param array<\StORM\Meta\Constraint> $toConstraints
+	 * @param array<\StORM\Meta\Index> $fromIndexes
+	 * @param array<\StORM\Meta\Index> $toIndexes
+	 * @param array<\StORM\Meta\Trigger> $fromTriggers
+	 * @param array<\StORM\Meta\Trigger> $toTriggers
 	 */
 	protected function getSqlSyncMetas(
 		string $fromTableName,
@@ -913,14 +915,14 @@ class Migrator
 	
 	/**
 	 * @param \StORM\Meta\Table $fromTable
-	 * @param \StORM\Meta\Column[] $fromColumns
-	 * @param \StORM\Meta\Column[] $toColumns
-	 * @param \StORM\Meta\Constraint[] $fromConstraints
-	 * @param \StORM\Meta\Constraint[] $toConstraints
-	 * @param \StORM\Meta\Index[] $fromIndexes
-	 * @param \StORM\Meta\Index[] $toIndexes
-	 * @param \StORM\Meta\Trigger[] $fromTriggers
-	 * @param \StORM\Meta\Trigger[] $toTriggers
+	 * @param array<\StORM\Meta\Column> $fromColumns
+	 * @param array<\StORM\Meta\Column> $toColumns
+	 * @param array<\StORM\Meta\Constraint> $fromConstraints
+	 * @param array<\StORM\Meta\Constraint> $toConstraints
+	 * @param array<\StORM\Meta\Index> $fromIndexes
+	 * @param array<\StORM\Meta\Index> $toIndexes
+	 * @param array<\StORM\Meta\Trigger> $fromTriggers
+	 * @param array<\StORM\Meta\Trigger> $toTriggers
 	 */
 	protected function getCleanTableSql(
 		Table $fromTable,
@@ -965,9 +967,9 @@ class Migrator
 	
 	/**
 	 * @param \StORM\Meta\Table $table
-	 * @param \StORM\Meta\Constraint[] $constraints
-	 * @param \StORM\Meta\Index[] $indexes
-	 * @param \StORM\Meta\Trigger[] $triggers
+	 * @param array<\StORM\Meta\Constraint> $constraints
+	 * @param array<\StORM\Meta\Index> $indexes
+	 * @param array<\StORM\Meta\Trigger> $triggers
 	 */
 	protected function getSqlDropMetas(Table $table, array $constraints, array $indexes, array $triggers): string
 	{

@@ -5,7 +5,7 @@ namespace Migrator\SqlGenerator;
 interface ISqlEntity
 {
 	/**
-	 * @return string[]
+	 * @return array<string>
 	 */
 	public function getSqlProperties(): array;
 	

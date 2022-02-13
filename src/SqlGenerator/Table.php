@@ -34,7 +34,7 @@ class Table implements ISqlEntity
 	}
 	
 	/**
-	 * @param \StORM\Meta\Column[] $columns
+	 * @param array<\StORM\Meta\Column> $columns
 	 * @param bool $ifNotExists
 	 */
 	public function getAdd(array $columns, bool $ifNotExists = true): string
@@ -90,7 +90,7 @@ class Table implements ISqlEntity
 	}
 	
 	/**
-	 * @return string[]
+	 * @return array<string>
 	 */
 	public function getSqlProperties(): array
 	{

@@ -12,18 +12,21 @@
     "ext-json": "*",
     "liquiddesign/storm":"~1.0",
     "nette/caching":"~3.0",
-    "composer/composer":"~1.0"
+    "composer/composer":"^2.0"
   },
   "require-dev":
   {
-    "nette/tester":"~2.0",
-    "phpstan/phpstan":"^0",
-    "liquiddesign/codestyle": "~1.0"
+    "nette/tester":"^2.0",
+    "tracy/tracy":"^2.0",
+    "liquiddesign/codestyle": "^2.0",
+    "phpstan/phpstan": "^1.0",
+    "phpcompatibility/php-compatibility": "^9.0"
   },
   "scripts": {
     "phpstan": "phpstan analyse --memory-limit 1G -c phpstan.neon",
     "phpcs": "phpcs --standard=ruleset.xml src",
     "phpcsfix": "phpcbf --standard=ruleset.xml src",
+    "phpcheck": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 8.1",
     "tester": "tester tests/*.phpt -j 0 -c tests/php.ini --setup tests/setup.php"
   },
   "config": {
