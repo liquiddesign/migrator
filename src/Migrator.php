@@ -255,7 +255,7 @@ class Migrator
 			$data->length = $length[1] ?? null;
 			$data->autoincrement = (bool) $data->autoincrement;
 			
-			$data->extra = Strings::trim(Strings::replace($data->extra, 'DEFAULT_GENERATED', ''));
+			$data->extra = Strings::trim(Strings::replace($data->extra, '/DEFAULT_GENERATED/', ''));
 			
 			$column->loadFromArray(Helpers::toArrayRecursive($data));
 			
