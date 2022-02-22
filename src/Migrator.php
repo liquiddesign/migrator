@@ -189,7 +189,7 @@ class Migrator
 		}
 		
 		if (!isset($this->defaultTypeMap[$type])) {
-			throw new \Exception("Default SQL type for PHP type: '$type' not found.");
+			return $type;
 		}
 		
 		return $this->defaultTypeMap[$type];

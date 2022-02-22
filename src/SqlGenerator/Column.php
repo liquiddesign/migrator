@@ -3,6 +3,7 @@
 namespace Migrator\SqlGenerator;
 
 use Migrator\Migrator;
+use Nette\Utils\Arrays;
 
 class Column implements ISqlEntity
 {
@@ -61,7 +62,7 @@ class Column implements ISqlEntity
 		$props['length'] = (string) $props['length'];
 		$props['autoincrement'] = (int) $props['autoincrement'];
 		
-		if (\in_array($props['type'], ['int', 'tinyint', 'bigint']) && \version_compare($this->migrator->getSqlVersion(), '8.0.19', '>=')) {
+		if (Arrays::contains(['int', 'tinyint', 'bigint'], $props['type']) && \version_compare($this->migrator->getSqlVersion(), '8.0.19', '>=')) {
 			$props['length'] = '';
 		}
 		
