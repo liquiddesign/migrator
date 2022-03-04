@@ -223,7 +223,7 @@ class Migrator
 			'nullable' => "IF(this.IS_NULLABLE = 'NO',0,1)",
 			'type' => 'this.DATA_TYPE',
 			'columnType' => 'this.COLUMN_TYPE',
-			$this->connection->quoteIdentifier('default') => 'this.COLUMN_DEFAULT',
+			$this->connection->quoteIdentifier('default') => "IF(this.COLUMN_DEFAULT = 'NULL',NULL,this.COLUMN_DEFAULT)",
 			'comment' => 'this.COLUMN_COMMENT',
 			$this->connection->quoteIdentifier('primaryKey') => "IF(this.COLUMN_KEY = 'PRI',1,0)",
 			$this->connection->quoteIdentifier('autoincrement') => "IF(this.EXTRA = 'AUTO_INCREMENT',1,0)",
