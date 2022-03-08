@@ -25,6 +25,8 @@ class Migrator
 	public const ALTER_ADD = 'ADD';
 	public const NULL = 'null';
 	
+	private const INDEX_MAX_LENGTH = 64;
+	
 	/**
 	 * @var array<callable>
 	 */
@@ -791,11 +793,11 @@ class Migrator
 			$rightConstraint->getName() => $rightConstraint,
 		];
 		$leftIndex = new \StORM\Meta\Index($relation->getVia());
-		$leftIndex->setName($relation->getVia() . \StORM\Meta\Structure::NAME_SEPARATOR . $leftColumn->getName());
+		$leftIndex->setName(Strings::substring($relation->getVia() . \StORM\Meta\Structure::NAME_SEPARATOR . $leftColumn->getName(), 0, self::INDEX_MAX_LENGTH));
 		$leftIndex->addColumn($leftColumn->getName());
 		
 		$rightIndex = new \StORM\Meta\Index($relation->getVia());
-		$rightIndex->setName($relation->getVia() . \StORM\Meta\Structure::NAME_SEPARATOR . $rightColumn->getName());
+		$rightIndex->setName(Strings::substring($relation->getVia() . \StORM\Meta\Structure::NAME_SEPARATOR . $rightColumn->getName(), 0, self::INDEX_MAX_LENGTH));
 		$rightIndex->addColumn($rightColumn->getName());
 		
 		$indexes = [
