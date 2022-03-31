@@ -580,6 +580,7 @@ class Migrator
 		$sql = '';
 		$tableExists = [];
 		$columnsByTableName = [];
+		$relationViaTable = [];
 		
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
@@ -638,8 +639,14 @@ class Migrator
 							}
 						}
 						
+						if (isset($relationViaTable[$relation->getVia()])) {
+							continue;
+						}
+						
 						$sql .= $this->getSqlSyncTable($this->getTable($nxnTableName), $entityTable, $this->getColumns($nxnTableName), $entityColumns);
 						$sql .= $this->getSqlSyncMetas($nxnTableName, $this->getConstraints($nxnTableName), $entityConstraints, $this->getIndexes($nxnTableName), $entityIndexes, [], []);
+						
+						$relationViaTable[$relation->getVia()] = true;
 					}
 				}
 			}
