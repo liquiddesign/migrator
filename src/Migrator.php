@@ -1004,7 +1004,7 @@ class Migrator
 	
 	private function getSqlDefaultAction(): string
 	{
-		return $this->sqlDefaultAction ?? $this->sqlDefaultAction = \version_compare($this->getSqlVersion(), '8.0.0', '>=') ? 'NO ACTION' : 'RESTRICT';
+		return $this->sqlDefaultAction ??= \version_compare($this->getSqlVersion(), '8.0.0', '>=') && !Strings::contains($this->getSqlVersion(), 'MariaDB') ? 'NO ACTION' : 'RESTRICT';
 	}
 	
 	private function getEntityClass(string $repositoryName): string
