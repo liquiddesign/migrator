@@ -1,5 +1,5 @@
 # ⇄ Migrátor
-Migrátor je nástroj pro synchronizaci StORM Entit and SQL databáze
+Migrátor je nástroj pro synchronizaci StORM Entit a mySQL databáze
 
 ![Actions](https://github.com/liquiddesign/migrator/actions/workflows/php.yml/badge.svg)
 ![Release](https://img.shields.io/github/v/tag/liquiddesign/migrator)
