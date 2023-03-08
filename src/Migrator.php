@@ -259,7 +259,8 @@ class Migrator
 			
 			$data->default = $data->default ? Strings::trim($data->default, '\'"') : $data->default;
 			
-			$data->extra = Strings::trim(Strings::replace($data->extra, '/DEFAULT_GENERATED/', ''));
+			$data->extra = Strings::replace($data->extra, '/DEFAULT_GENERATED/', '');
+			$data->extra = Strings::trim(Strings::replace($data->extra, '/current_timestamp()/', 'CURRENT_TIMESTAMP'));
 			
 			$column->loadFromArray(Helpers::toArrayRecursive($data));
 			
