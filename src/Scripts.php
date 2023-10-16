@@ -43,11 +43,19 @@ class Scripts
 	public static function syncDatabase(Event $event): void
 	{
 		$arguments = $event->getArguments();
-		
-		$container = static::getDIContainer($arguments);
-		
-		$migrator = $container->getByType(Migrator::class);
-		$sql = $migrator->dumpAlters();
+
+		try {
+			$container = static::getDIContainer($arguments);
+
+			$migrator = $container->getByType(Migrator::class);
+			$sql = $migrator->dumpAlters();
+		} catch (\Throwable $exception) {
+			$event->getIO()->writeError($exception->getMessage());
+			$event->getIO()->writeError($exception->getTraceAsString());
+
+			return;
+		}
+
 		$event->getIO()->write($sql);
 		
 		if (!Strings::trim($sql)) {
