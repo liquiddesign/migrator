@@ -11,13 +11,13 @@
     "ext-pdo": "*",
     "ext-json": "*",
     "liquiddesign/storm":"~1.0",
+    "tracy/tracy":"^2.0",
     "nette/caching":"~3.0",
     "composer/composer":"^2.0"
   },
   "require-dev":
   {
     "nette/tester":"^2.0",
-    "tracy/tracy":"^2.0",
     "liquiddesign/codestyle": "^2.0",
     "phpstan/phpstan": "^1.0",
     "phpcompatibility/php-compatibility": "^9.0"

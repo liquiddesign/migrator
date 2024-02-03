@@ -35,6 +35,7 @@ class MigratorDI extends \Nette\DI\CompilerExtension
 				'propertyType' => Expect::string('string'),
 				'autoincrement' => Expect::bool(false),
 			]),
+			'debug' => Expect::bool(false),
 			'engine' => Expect::string('InnoDB'),
 			'constraintActionOnUpdate' => Expect::string('NO ACTION'),
 			'constraintActionOnDelete' => Expect::string('NO ACTION'),
@@ -52,6 +53,7 @@ class MigratorDI extends \Nette\DI\CompilerExtension
 		$schemaManager = $builder->addDefinition($this->prefix('migrator'));
 		$schemaManager->setType(Migrator::class)->setAutowired(true);
 		
+		$schemaManager->addSetup('setDebug', [$configuration->debug]);
 		$schemaManager->addSetup('setDefaultEngine', [$configuration->engine]);
 		$schemaManager->addSetup('setDefaultTypeMap', [$configuration->typeMap]);
 		$schemaManager->addSetup('setDefaultLengthMap', [$configuration->lengthMap]);

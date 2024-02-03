@@ -6,6 +6,7 @@ use Composer\Script\Event;
 use Nette\DI\Container;
 use Nette\Utils\Strings;
 use StORM\DIConnection;
+use Tracy\Debugger;
 
 class Scripts
 {
@@ -48,6 +49,14 @@ class Scripts
 			$container = static::getDIContainer($arguments);
 
 			$migrator = $container->getByType(Migrator::class);
+
+			$migrator->onCompareFail[] = function ($class, $from, $to) use ($migrator): void {
+				if ($migrator->isDebug()) {
+					Debugger::log($class);
+					Debugger::log($from);
+					Debugger::log($to);
+				}
+			};
 			$sql = $migrator->dumpAlters();
 		} catch (\Throwable $exception) {
 			$event->getIO()->writeError($exception->getMessage());
@@ -62,6 +71,10 @@ class Scripts
 			$event->getIO()->write('Everything is synchronized. Good job!');
 			
 			return;
+		}
+
+		if ($migrator->isDebug()) {
+			$event->getIO()->write('Debug mode is ON! Open tracy log for more details.');
 		}
 		
 		if (!$event->getIO()->askConfirmation('Execute SQL command? (y)')) {

@@ -84,7 +84,9 @@ class Migrator
 	];
 	
 	private string $sqlDefaultAction;
-	
+
+	private bool $debug = false;
+
 	public function __construct(DIConnection $connection, SchemaManager $schemaManager)
 	{
 		$this->connection = $connection;
@@ -96,6 +98,16 @@ class Migrator
 		}
 		
 		$this->defaultCollation = (string) $connection->rows()->firstValue("COLLATION('')");
+	}
+
+	public function setDebug(bool $debug): void
+	{
+		$this->debug = $debug;
+	}
+
+	public function isDebug(): bool
+	{
+		return $this->debug;
 	}
 	
 	public function getConnection(): DIConnection
@@ -247,6 +259,7 @@ class Migrator
 		
 		/** @var \StdClass $data */
 		foreach ($rows as $data) {
+			unset($data->charset);
 			$column = new Column($tableName, $data->name);
 			$column->setPrimaryKey((bool) $data->primaryKey);
 			$data->nullable = (bool) $data->nullable;
