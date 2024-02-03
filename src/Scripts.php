@@ -36,7 +36,7 @@ class Scripts
 
 		$container->getByType(DIConnection::class)->query($sql);
 	}
-	
+
 	/**
 	 * Trigger as event from composer
 	 * @param \Composer\Script\Event $event Composer event
@@ -44,17 +44,20 @@ class Scripts
 	public static function syncDatabase(Event $event): void
 	{
 		$arguments = $event->getArguments();
+		$i = 0;
 
 		try {
 			$container = static::getDIContainer($arguments);
 
 			$migrator = $container->getByType(Migrator::class);
 
-			$migrator->onCompareFail[] = function ($class, $from, $to) use ($migrator): void {
+			$migrator->onCompareFail[] = function ($class, $from, $to) use ($migrator, &$i): void {
 				if ($migrator->isDebug()) {
 					Debugger::log($class);
 					Debugger::log($from);
 					Debugger::log($to);
+
+					$i++;
 				}
 			};
 			$sql = $migrator->dumpAlters();
@@ -66,25 +69,25 @@ class Scripts
 		}
 
 		$event->getIO()->write($sql);
-		
+
 		if (!Strings::trim($sql)) {
 			$event->getIO()->write('Everything is synchronized. Good job!');
-			
+
 			return;
 		}
 
 		if ($migrator->isDebug()) {
-			$event->getIO()->write('Debug mode is ON! Open tracy log for more details.');
+			$event->getIO()->write('Debug mode is ON! Open tracy log for more details. Match fails: ' . $i);
 		}
-		
+
 		if (!$event->getIO()->askConfirmation('Execute SQL command? (y)')) {
 			return;
 		}
 
 		$container->getByType(DIConnection::class)->query($sql);
-		
+
 		$sql = $migrator->dumpAlters();
-		
+
 		if (!Strings::trim($sql)) {
 			$event->getIO()->write('Everything is synchronized. Good job!');
 		} else {
