@@ -687,7 +687,7 @@ class Migrator
 		$match = $entity->getSqlProperties() === $toCompareEntity->getSqlProperties();
 		
 		if (!$match) {
-			Arrays::invoke($this->onCompareFail, \get_class($entity), $entity->getSqlProperties(), $toCompareEntity->getSqlProperties());
+			Arrays::invoke($this->onCompareFail, $entity::class, $entity->getSqlProperties(), $toCompareEntity->getSqlProperties());
 		}
 		
 		return $match;
