@@ -28,7 +28,8 @@
     "phpcsfix": "phpcbf --standard=ruleset.xml src",
     "phpcheck7": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 7.4",
     "phpcheck8": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 8.1",
-    "tester": "tester tests/*.phpt -j 0 -c tests/php.ini --setup tests/setup.php"
+    "tester": "tester tests/*.phpt -j 0 -c tests/php.ini --setup tests/setup.php",
+    "check-commit": "@php ./vendor/liquiddesign/codestyle/src/scripts/check-last-commit.php"
   },
   "config": {
     "allow-plugins": {
