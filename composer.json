@@ -1,43 +1,47 @@
 {
-  "name": "liquiddesign/migrator",
-  "description": "⇄ Migrátor je nástroj pro synchronizaci StORM Entit and SQL databáze",
-  "license": "MIT",
-  "autoload": {
-    "psr-4": {"Migrator\\": "src/"}
-  },
-  "require" :
-  {
-    "php": "^8.0",
-    "ext-pdo": "*",
-    "ext-json": "*",
-    "liquiddesign/storm":"~2.0",
-    "tracy/tracy":"^2.0",
-    "nette/caching":"~3.0",
-    "composer/composer":"^2.0"
-  },
-  "require-dev":
-  {
-    "nette/tester":"^2.0",
-    "liquiddesign/codestyle": "^3.0",
-    "phpstan/phpstan": "^1.0",
-    "phpcompatibility/php-compatibility": "^9.0"
-  },
-  "scripts": {
-    "phpstan": "phpstan analyse --memory-limit 1G -c phpstan.neon",
-    "phpcs": "phpcs --standard=ruleset.xml src",
-    "phpcsfix": "phpcbf --standard=ruleset.xml src",
-    "phpcheck7": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 7.4",
-    "phpcheck8": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 8.1",
-    "tester": "tester tests/*.phpt -j 0 -c tests/php.ini --setup tests/setup.php",
-    "check-commit": "@php ./vendor/liquiddesign/codestyle/src/scripts/check-last-commit.php",
-    "release": "@changelog --commit",
-    "release:patch": "@changelog --patch --commit",
-    "release:minor": "@changelog --minor --commit",
-    "release:major": "@changelog --major --commit"
-  },
-  "config": {
-    "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true
-    }
-  }
+    "name": "liquiddesign/migrator",
+    "description": "⇄ Migrátor je nástroj pro synchronizaci StORM Entit and SQL databáze",
+    "license": "MIT",
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Migrator\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^8.0",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "liquiddesign/storm": "~2.0",
+        "tracy/tracy": "^2.0",
+        "nette/caching": "~3.0",
+        "composer/composer": "^2.0"
+    },
+    "require-dev": {
+        "nette/tester": "^2.0",
+        "liquiddesign/codestyle": "^3.0",
+        "phpstan/phpstan": "^1.0",
+        "phpcompatibility/php-compatibility": "^9.0"
+    },
+    "scripts": {
+        "phpstan": "phpstan analyse --memory-limit 1G -c phpstan.neon",
+        "phpcs": "phpcs --standard=ruleset.xml src",
+        "phpcsfix": "phpcbf --standard=ruleset.xml src",
+        "phpcheck7": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 7.4",
+        "phpcheck8": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 8.1",
+        "tester": "tester tests/*.phpt -j 0 -c tests/php.ini --setup tests/setup.php",
+        "check-commit": "@php ./vendor/liquiddesign/codestyle/src/scripts/check-last-commit.php",
+        "changelog": "conventional-changelog --config=./vendor/liquiddesign/codestyle/src/changelog/changelog-config.php",
+        "release": "@changelog --commit",
+        "release:patch": "@changelog --patch --commit",
+        "release:minor": "@changelog --minor --commit",
+        "release:major": "@changelog --major --commit"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "version": "1.0.16"
 }
