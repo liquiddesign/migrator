@@ -10,7 +10,7 @@
     "php": "^8.0",
     "ext-pdo": "*",
     "ext-json": "*",
-    "liquiddesign/storm":"~1.0",
+    "liquiddesign/storm":"~2.0",
     "tracy/tracy":"^2.0",
     "nette/caching":"~3.0",
     "composer/composer":"^2.0"
@@ -29,7 +29,11 @@
     "phpcheck7": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 7.4",
     "phpcheck8": "phpcs -p ./src --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --runtime-set testVersion 8.1",
     "tester": "tester tests/*.phpt -j 0 -c tests/php.ini --setup tests/setup.php",
-    "check-commit": "@php ./vendor/liquiddesign/codestyle/src/scripts/check-last-commit.php"
+    "check-commit": "@php ./vendor/liquiddesign/codestyle/src/scripts/check-last-commit.php",
+    "release": "@changelog --commit",
+    "release:patch": "@changelog --patch --commit",
+    "release:minor": "@changelog --minor --commit",
+    "release:major": "@changelog --major --commit"
   },
   "config": {
     "allow-plugins": {
