@@ -4,6 +4,15 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [1.0.17](https://github.com/liquiddesign/migrator/compare/v1.0.16...v1.0.17) (2024-03-08)
+
+### Builds
+
+* PHP 8.1 dependency ([26fddc](https://github.com/liquiddesign/migrator/commit/26fddc2666226b98a31c2c01033e0e3a0d0efe7b))
+
+
+---
+
 ## [1.0.16](https://github.com/liquiddesign/migrator/compare/v1.0.15...v1.0.16) (2024-03-07)
 
 ### ⚠ BREAKING CHANGES
