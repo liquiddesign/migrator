@@ -17,19 +17,19 @@ class Scripts
 	public static function createDatabase(Event $event): void
 	{
 		$arguments = $event->getArguments();
-		
+
 		$container = static::getDIContainer($arguments);
-		
+
 		$migrator = $container->getByType(Migrator::class);
 		$sql = $migrator->dumpStructure();
 		$event->getIO()->write($sql);
-		
+
 		if (!Strings::trim($sql)) {
 			$event->getIO()->write('Nothing to dump!');
-			
+
 			return;
 		}
-		
+
 		if (!$event->getIO()->askConfirmation('Execute SQL command? (y)')) {
 			return;
 		}
@@ -84,7 +84,20 @@ class Scripts
 			return;
 		}
 
-		$container->getByType(DIConnection::class)->query($sql);
+		$connection = $container->getByType(DIConnection::class);
+
+		if ($migrator->isDebug()) {
+			$fp = \fopen('php://memory', 'r+');
+			\fputs($fp, $sql);
+			\rewind($fp);
+
+			while ($line = \fgets($fp)) {
+				$event->getIO()->write('Execing ... ' . Strings::trim($line));
+				$connection->query($line);
+			}
+		} else {
+			$connection->query($sql);
+		}
 
 		$sql = $migrator->dumpAlters();
 
@@ -94,7 +107,52 @@ class Scripts
 			$event->getIO()->writeError(' Synchronization failed!');
 		}
 	}
-	
+
+	public static function cleanDatabase(Event $event): void
+	{
+		$arguments = $event->getArguments();
+
+		$container = static::getDIContainer($arguments);
+
+		$migrator = $container->getByType(Migrator::class);
+		$sql = $migrator->dumpCleanAlters();
+
+		$event->getIO()->write($sql);
+
+		if (!Strings::trim($sql)) {
+			$event->getIO()->write('Everything is clean. Good job!');
+
+			return;
+		}
+
+		if (!$event->getIO()->askConfirmation('Execute SQL command? (y)')) {
+			return;
+		}
+
+		$connection = $container->getByType(DIConnection::class);
+
+		if ($migrator->isDebug()) {
+			$fp = \fopen('php://memory', 'r+');
+			\fputs($fp, $sql);
+			\rewind($fp);
+
+			while ($line = \fgets($fp)) {
+				$event->getIO()->write('Execing ... ' . Strings::trim($line));
+				$connection->query($line);
+			}
+		} else {
+			$connection->query($sql);
+		}
+
+		$sql = $migrator->dumpCleanAlters();
+
+		if (!Strings::trim($sql)) {
+			$event->getIO()->write('Everything is clean. Good job!');
+		} else {
+			$event->getIO()->writeError(' Clean failed!');
+		}
+	}
+
 	protected static function getDIContainer(array $arguments): Container
 	{
 		if (isset($arguments[0]) && \is_file(\dirname(__DIR__, 4) . '/' . $arguments[0])) {
@@ -102,7 +160,7 @@ class Scripts
 		}
 
 		$class = isset($arguments[0]) && \class_exists($arguments[0]) ? $arguments[0] : '\App\Bootstrap';
-		
+
 		return \method_exists($class, 'createContainer') ? $class::createContainer() : $class::boot()->createContainer();
 	}
 }

@@ -24,20 +24,20 @@ class Migrator
 	public const ALTER_MODIFY = 'CHANGE';
 	public const ALTER_ADD = 'ADD';
 	public const NULL = 'null';
-	
+
 	private const INDEX_MAX_LENGTH = 64;
-	
+
 	/**
 	 * @var array<callable>
 	 */
 	public array $onCompareFail = [];
-	
+
 	private \StORM\DIConnection $connection;
-	
+
 	private string $defaultCharset;
-	
+
 	private string $defaultCollation;
-	
+
 	/**
 	 * @var array<string>
 	 */
@@ -47,7 +47,7 @@ class Migrator
 		'bool' => 'tinyint',
 		'float' => 'double',
 	];
-	
+
 	/**
 	 * @var array<string>|array<int>
 	 */
@@ -57,7 +57,7 @@ class Migrator
 		'varchar' => 255,
 		'tinyint' => 1,
 	];
-	
+
 	/**
 	 * @var array<string>|array<int>
 	 */
@@ -66,15 +66,15 @@ class Migrator
 		'bigint' => 20,
 		'varchar' => 32,
 	];
-	
+
 	private string $defaultEngine = 'InnoDB';
-	
+
 	private string $defaultConstraintActionOnUpdate = 'NO ACTION';
-	
+
 	private string $defaultConstraintActionOnDelete = 'NO ACTION';
-	
+
 	private \StORM\SchemaManager $schemaManager;
-	
+
 	/**
 	 * @var array<mixed>
 	 */
@@ -82,7 +82,7 @@ class Migrator
 		'name' => 'uuid',
 		'propertyType' => 'string',
 	];
-	
+
 	private string $sqlDefaultAction;
 
 	private bool $debug = false;
@@ -92,11 +92,11 @@ class Migrator
 		$this->connection = $connection;
 		$this->schemaManager = $schemaManager;
 		$this->defaultCharset = (string) $connection->rows()->firstValue("CHARSET('')");
-		
+
 		if ($this->defaultCharset === 'utf8mb3') {
 			$this->defaultCharset = 'utf8';
 		}
-		
+
 		$this->defaultCollation = (string) $connection->rows()->firstValue("COLLATION('')");
 	}
 
@@ -109,12 +109,12 @@ class Migrator
 	{
 		return $this->debug;
 	}
-	
+
 	public function getConnection(): DIConnection
 	{
 		return $this->connection;
 	}
-	
+
 	/**
 	 * @return array<string>
 	 */
@@ -122,7 +122,7 @@ class Migrator
 	{
 		return $this->defaultLengthMap;
 	}
-	
+
 	/**
 	 * @param array<string> $defaultLengthMap
 	 */
@@ -130,7 +130,7 @@ class Migrator
 	{
 		$this->defaultPrimaryKeyLengthMap = $defaultLengthMap;
 	}
-	
+
 	/**
 	 * @param string $sqlType
 	 * @throws \Exception
@@ -142,10 +142,10 @@ class Migrator
 			unset($this->defaultPrimaryKeyLengthMap['bigint']);
 			unset($this->defaultPrimaryKeyLengthMap['tinyint']);
 		}
-		
+
 		return $this->defaultPrimaryKeyLengthMap[$sqlType] ?? '';
 	}
-	
+
 	/**
 	 * @param array<string> $defaultLengthMap
 	 */
@@ -153,7 +153,7 @@ class Migrator
 	{
 		$this->defaultLengthMap = $defaultLengthMap;
 	}
-	
+
 	/**
 	 * @param string $sqlType
 	 * @throws \Exception
@@ -163,10 +163,10 @@ class Migrator
 		if (isset($this->defaultLengthMap['int']) && \version_compare($this->getSqlVersion(), '8.0.19', '>=')) {
 			unset($this->defaultLengthMap['int']);
 		}
-		
+
 		return $this->defaultLengthMap[$sqlType] ?? null;
 	}
-	
+
 	/**
 	 * @param string $type
 	 * @param bool|null $nullable
@@ -178,37 +178,37 @@ class Migrator
 		$types = \explode('|', $type);
 		$type = \array_shift($types);
 		$enum = [];
-		
+
 		foreach ($types as $subType) {
 			if ($subType === self::NULL) {
 				$nullable = true;
-				
+
 				continue;
 			}
-			
+
 			$matches = [];
 			\preg_match("/'(.*?)'/", $subType, $matches);
-			
+
 			if ($matches) {
 				$enum[] = $matches[0];
 			}
-			
+
 			continue;
 		}
-		
+
 		if ($enum) {
 			$length = \implode(',', $enum);
-			
+
 			return 'ENUM';
 		}
-		
+
 		if (!isset($this->defaultTypeMap[$type])) {
 			return $type;
 		}
-		
+
 		return $this->defaultTypeMap[$type];
 	}
-	
+
 	/**
 	 * @param array<string> $defaultTypeMap
 	 */
@@ -216,7 +216,7 @@ class Migrator
 	{
 		$this->defaultTypeMap = $defaultTypeMap;
 	}
-	
+
 	/**
 	 * @return array<string>
 	 */
@@ -224,7 +224,7 @@ class Migrator
 	{
 		return $this->defaultTypeMap;
 	}
-	
+
 	/**
 	 * @param string $tableName
 	 * @param bool $onlyPrimary
@@ -245,18 +245,18 @@ class Migrator
 			$this->connection->quoteIdentifier('collate') => 'this.COLLATION_NAME',
 			$this->connection->quoteIdentifier('charset') => 'this.CHARACTER_SET_NAME',
 		];
-		
+
 		$from = ['this' => 'INFORMATION_SCHEMA.COLUMNS'];
 		$dbName = $this->connection->getDatabaseName();
-		
+
 		$rows = $this->connection->rows($from, $select)->where('this.TABLE_SCHEMA', $dbName)->where('this.TABLE_NAME', $tableName);
-		
+
 		if ($onlyPrimary) {
 			$rows->where('this.COLUMN_KEY', 'PRI');
 		}
-		
+
 		$columns = [];
-		
+
 		/** @var \StdClass $data */
 		foreach ($rows as $data) {
 			unset($data->charset);
@@ -266,30 +266,30 @@ class Migrator
 			$length = null;
 			\preg_match('/.+\((.*?)\)/', $data->columnType, $length);
 			unset($data->columnType, $data->primaryKey);
-			
+
 			$data->length = $length[1] ?? null;
 			$data->autoincrement = (bool) $data->autoincrement;
-			
+
 			$data->default = $data->default ? Strings::trim($data->default, '\'"') : $data->default;
-			
+
 			$data->extra = Strings::replace($data->extra, '/DEFAULT_GENERATED/', '');
 			$data->extra = Strings::trim(Strings::replace($data->extra, '/current_timestamp\(\)/', 'CURRENT_TIMESTAMP'));
-			
+
 			$column->loadFromArray(Helpers::toArrayRecursive($data));
-			
+
 			$columns[$data->name] = $column;
 		}
-		
+
 		return $columns;
 	}
-	
+
 	public function getPrimaryColumn(string $tableName): ?Column
 	{
 		$columns = $this->getColumns($tableName, true);
-		
+
 		return \reset($columns) ?: null;
 	}
-	
+
 	/**
 	 * @param string $tableName
 	 * @return array<\StORM\Meta\Constraint>
@@ -301,15 +301,15 @@ class Migrator
 		$onActions = 'RESTRICT|NO ACTION|CASCADE|SET NULL|SET DEFAULT';
 		$createTable = $this->getConnection()->query("SHOW CREATE TABLE $tableName")->fetchColumn(1);
 		$defaultAction = $this->getSqlDefaultAction();
-		
+
 		if ($createTable) {
 			$pattern = "~CONSTRAINT ($pn) FOREIGN KEY ?\\(((?:$pn,? ?)+)\\) REFERENCES ($pn)(?:\\.($pn))? \\(((?:$pn,? ?)+)\\)(?: ON DELETE ($onActions))?(?: ON UPDATE ($onActions))?~";
 			\preg_match_all($pattern, $createTable, $matches, \PREG_SET_ORDER);
-			
+
 			foreach ($matches as $match) {
 				\preg_match_all("~$pn~", $match[2], $source);
 				\preg_match_all("~$pn~", $match[5], $target);
-				
+
 				$rows[] = (object) [
 					'name' => Strings::substring($match[1], 1, -1),
 					'source' => $tableName,
@@ -321,19 +321,19 @@ class Migrator
 				];
 			}
 		}
-		
+
 		$constraints = [];
-		
+
 		/** @var \StdClass $data */
 		foreach ($rows as $data) {
 			$constraint = new Constraint($tableName, $data->name);
 			$constraint->loadFromArray(Helpers::toArrayRecursive($data));
 			$constraints[$data->name] = $constraint;
 		}
-		
+
 		return $constraints;
 	}
-	
+
 	/**
 	 * @param string $tableName
 	 * @param bool $skipPrimary
@@ -346,21 +346,21 @@ class Migrator
 			'columns' => 'GROUP_CONCAT(this.COLUMN_NAME ORDER BY this.SEQ_IN_INDEX ASC)',
 			$this->connection->quoteIdentifier('unique') => 'IF(this.NON_UNIQUE,0,1)',
 		];
-		
+
 		$from = ['this' => 'INFORMATION_SCHEMA.STATISTICS'];
 		$dbName = $this->connection->getDatabaseName();
-		
+
 		$rows = $this->connection->rows($from, $select)->where('this.TABLE_SCHEMA', $dbName)->where('this.TABLE_NAME', $tableName);
-		
+
 		if ($skipPrimary) {
 			$rows->whereNot('this.INDEX_NAME', 'PRIMARY');
 		}
-		
+
 		$rows->setGroupBy(['this.INDEX_NAME']);
-		
-		
+
+
 		$indexes = [];
-		
+
 		/** @var \StdClass $data */
 		foreach ($rows as $data) {
 			$index = new Index($tableName);
@@ -369,10 +369,10 @@ class Migrator
 			$index->loadFromArray(Helpers::toArrayRecursive($data));
 			$indexes[$data->name] = $index;
 		}
-		
+
 		return $indexes;
 	}
-	
+
 	/**
 	 * @param string $tableName
 	 * @return array<\StORM\Meta\Trigger>
@@ -385,23 +385,23 @@ class Migrator
 			'timing' => 'this.ACTION_TIMING',
 			'statement' => 'this.ACTION_STATEMENT',
 		];
-		
+
 		$from = ['this' => 'INFORMATION_SCHEMA.TRIGGERS'];
 		$dbName = $this->connection->getDatabaseName();
-		
+
 		$rows = $this->connection->rows($from, $select)->where('this.TRIGGER_SCHEMA', $dbName)->where('this.EVENT_OBJECT_TABLE', $tableName);
 		$triggers = [];
-		
+
 		/** @var \StdClass $data */
 		foreach ($rows as $data) {
 			$trigger = new Trigger($tableName);
 			$trigger->loadFromArray(Helpers::toArrayRecursive($data));
 			$triggers[$data->name] = $trigger;
 		}
-		
+
 		return $triggers;
 	}
-	
+
 	/**
 	 * @return array<string>
 	 */
@@ -409,10 +409,10 @@ class Migrator
 	{
 		$dbName = $this->connection->getDatabaseName();
 		$from = ['this' => 'INFORMATION_SCHEMA.TABLES'];
-		
+
 		return $this->connection->rows($from, ['this.TABLE_NAME'])->where('this.TABLE_SCHEMA', $dbName)->toArrayOf('TABLE_NAME');
 	}
-	
+
 	/**
 	 * @return array<\StORM\Meta\Table>
 	 */
@@ -426,21 +426,21 @@ class Migrator
 		];
 		$from = ['this' => 'INFORMATION_SCHEMA.TABLES'];
 		$dbName = $this->connection->getDatabaseName();
-		
+
 		$rows = $this->connection->rows($from, $select)->where('this.TABLE_SCHEMA', $dbName);
-		
+
 		$tables = [];
-		
+
 		/** @var \StdClass $data */
 		foreach ($rows as $data) {
 			$table = new Table($data->name);
 			$table->loadFromArray(Helpers::toArrayRecursive($data));
 			$tables[$data->name] = $table;
 		}
-		
+
 		return $tables;
 	}
-	
+
 	public function getTable(string $tableName): ?Table
 	{
 		$select = [
@@ -451,116 +451,116 @@ class Migrator
 		];
 		$from = ['this' => 'INFORMATION_SCHEMA.TABLES'];
 		$dbName = $this->connection->getDatabaseName();
-		
+
 		$data = $this->connection->rows($from, $select)->where('this.TABLE_SCHEMA', $dbName)->where('this.TABLE_NAME', $tableName)->first();
-		
+
 		if (!$data) {
 			return null;
 		}
-		
+
 		$table = new Table($tableName);
 		$table->loadFromArray(Helpers::toArrayRecursive($data));
-		
+
 		return $table;
 	}
-	
+
 	public function getDefaultCharset(): string
 	{
 		return $this->defaultCharset;
 	}
-	
+
 	public function setDefaultCharset(string $defaultCharset): void
 	{
 		$this->defaultCharset = $defaultCharset;
 	}
-	
+
 	public function setDefaultEngine(string $defaultEngine): void
 	{
 		$this->defaultEngine = $defaultEngine;
 	}
-	
+
 	public function getDefaultEngine(): string
 	{
 		return $this->defaultEngine;
 	}
-	
+
 	public function getDefaultCollation(): string
 	{
 		return $this->defaultCollation;
 	}
-	
+
 	public function setDefaultCollation(string $defaultCollation): void
 	{
 		$this->defaultCollation = $defaultCollation;
 	}
-	
+
 	public function setDefaultConstraintActions(string $onUpdate, string $onDelete): void
 	{
 		$this->defaultConstraintActionOnUpdate = $onUpdate;
 		$this->defaultConstraintActionOnDelete = $onDelete;
 	}
-	
+
 	public function getDefaultConstraintActionOnUpdate(): string
 	{
 		return $this->defaultConstraintActionOnUpdate;
 	}
-	
+
 	public function getDefaultConstraintActionOnDelete(): string
 	{
 		return $this->defaultConstraintActionOnDelete;
 	}
-	
+
 	public function getDefaultPrimaryKey(string $class): Column
 	{
 		$config = $this->defaultPrimaryKeyConfiguration;
-		
+
 		$column = new Column($class, null);
-		
+
 		if (isset($config['propertyType'])) {
 			$column->setPropertyType($config['propertyType']);
 			unset($config['propertyType']);
 		}
-		
+
 		$column->setPrimaryKey(true);
 		$column->loadFromArray($config);
-		
+
 		return $column;
 	}
-	
+
 	public function setDefaultPrimaryKeyConfiguration(array $configuration): void
 	{
 		$this->defaultPrimaryKeyConfiguration = $configuration;
 	}
-	
+
 	public function dumpStructure(): string
 	{
 		$tables = [];
 		$sql = '';
-		
+
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
-			
+
 			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
-			
+
 			$entityTable = $structure->getTable();
 			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
 			$tables[$entityTable->getName()] = $entityTable->getName();
-			
+
 			$sql .= $this->getSqlCreateTable($entityTable, $entityColumns);
 		}
-		
+
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
 			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
 			$entityIndexes = $this->parseIndexes($structure->getIndexes(), $this->connection->getAvailableMutations(), $structure);
-			
+
 			$sql .= $this->getSqlAddMetas($structure->getTable(), $structure->getConstraints(), $entityIndexes, $structure->getTriggers());
 		}
-		
+
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
 			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
-			
+
 			foreach ($structure->getRelations() as $relation) {
 				if ($relation instanceof \StORM\Meta\RelationNxN && !isset($tables[$relation->getVia()])) {
 					[$entityTable, $entityColumns, $entityConstraints, $entityIndexes] = $this->parseNxNRelation($relation);
@@ -569,56 +569,56 @@ class Migrator
 				}
 			}
 		}
-		
+
 		return $sql;
 	}
-	
+
 	public function dumpRealStructure(): string
 	{
 		$sql = '';
-		
+
 		foreach ($this->getTables() as $table) {
 			$sql .= $this->getSqlCreateTable($table, $this->getColumns($table->getName()));
 		}
-		
+
 		foreach ($this->getTables() as $table) {
 			$tableName = $table->getName();
 			$sql .= $this->getSqlAddMetas($table, $this->getConstraints($tableName), $this->getIndexes($tableName), $this->getTriggers($tableName));
 		}
-		
+
 		return $sql;
 	}
-	
+
 	public function dumpAlters(): string
 	{
 		$sql = '';
 		$tableExists = [];
 		$columnsByTableName = [];
 		$relationViaTable = [];
-		
+
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
-			
+
 			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
-			
+
 			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
 			$columnsByTableName[$structure->getTable()->getName()] = $entityColumns;
-			
+
 			$tableExists[$repositoryName] = $this->getTable($structure->getTable()->getName()) !== null;
-			
+
 			if ($tableExists[$repositoryName]) {
 				$sql .= $this->getSqlSyncTable($this->getTable($structure->getTable()->getName()), $structure->getTable(), $this->getColumns($structure->getTable()->getName()), $entityColumns);
 			} else {
 				$sql .= $this->getSqlCreateTable($structure->getTable(), $entityColumns);
 			}
 		}
-		
+
 		foreach ($this->connection->findAllRepositories() as $repositoryName) {
 			$class = $this->getEntityClass($repositoryName);
 			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
 			$tableName = $structure->getTable()->getName();
 			$entityIndexes = $this->parseIndexes($structure->getIndexes(), $this->connection->getAvailableMutations(), $structure);
-			
+
 			if ($tableExists[$repositoryName]) {
 				$sql .= $this->getSqlSyncMetas(
 					$tableName,
@@ -632,14 +632,14 @@ class Migrator
 			} else {
 				$sql .= $this->getSqlAddMetas($structure->getTable(), $structure->getConstraints(), $entityIndexes, $structure->getTriggers());
 			}
-			
+
 			foreach ($structure->getRelations() as $relation) {
 				if ($relation instanceof \StORM\Meta\RelationNxN) {
 					$nxnTableName = $relation->getVia();
 					[$entityTable, $entityColumns, $entityConstraints, $entityIndexes] = $this->parseNxNRelation($relation);
-					
+
 					$nxnTable = $this->getTable($nxnTableName);
-					
+
 					if (!$nxnTable) {
 						$sql .= $this->getSqlCreateTable($entityTable, $entityColumns);
 						$sql .= $this->getSqlAddMetas($entityTable, $entityConstraints, $entityIndexes, []);
@@ -652,31 +652,61 @@ class Migrator
 								}
 							}
 						}
-						
-						if (isset($relationViaTable[$relation->getVia()])) {
+
+						// is already defined in another collection or is defined via cross entity
+						if (isset($relationViaTable[$relation->getVia()]) || isset($columnsByTableName[$relation->getVia()])) {
 							continue;
 						}
-						
+
 						$sql .= $this->getSqlSyncTable($this->getTable($nxnTableName), $entityTable, $this->getColumns($nxnTableName), $entityColumns);
 						$sql .= $this->getSqlSyncMetas($nxnTableName, $this->getConstraints($nxnTableName), $entityConstraints, $this->getIndexes($nxnTableName), $entityIndexes, [], []);
-						
+
 						$relationViaTable[$relation->getVia()] = true;
 					}
 				}
 			}
 		}
-		
+
 		return $sql;
 	}
-	
+
 	public function dumpCleanAlters(): string
 	{
-		// @TODO  if not found drop columns
-		// @TODO  if not found drop columns
-		
-		return '';
+		$sql = '';
+
+		foreach ($this->connection->findAllRepositories() as $repositoryName) {
+			$class = $this->getEntityClass($repositoryName);
+
+			$structure = $this->schemaManager->getStructure($class, new Cache(new DevNullStorage()), $this->getDefaultPrimaryKey($class));
+
+			$entityColumns = $this->parseColumns($structure->getColumns(), $this->connection->getAvailableMutations());
+			$entityIndexes = $this->parseIndexes($structure->getIndexes(), $this->connection->getAvailableMutations(), $structure);
+
+			foreach ($structure->getColumns() as $column) {
+				if ($column->isAutoincrement()) {
+					$index = new Index($class);
+					$index->addColumn($column->getName());
+					$index->setUnique(true);
+					$entityIndexes[$column->getName()] = $index;
+				}
+			}
+
+			$sql .= $this->getCleanTableSql(
+				$structure->getTable(),
+				$this->getColumns($structure->getTable()->getName()),
+				$entityColumns,
+				$this->getConstraints($structure->getTable()->getName()),
+				$structure->getConstraints(),
+				$this->getIndexes($structure->getTable()->getName()),
+				$entityIndexes,
+				$this->getTriggers($structure->getTable()->getName()),
+				$structure->getTriggers()
+			);
+		}
+
+		return $sql;
 	}
-	
+
 	public function getSqlVersion(): string
 	{
 		return $this->getConnection()->getLink()->getAttribute(\PDO::ATTR_SERVER_VERSION);
@@ -685,14 +715,14 @@ class Migrator
 	protected function compare(ISqlEntity $entity, ISqlEntity $toCompareEntity): bool
 	{
 		$match = $entity->getSqlProperties() === $toCompareEntity->getSqlProperties();
-		
+
 		if (!$match) {
 			Arrays::invoke($this->onCompareFail, $entity::class, $entity->getSqlProperties(), $toCompareEntity->getSqlProperties());
 		}
-		
+
 		return $match;
 	}
-	
+
 	/**
 	 * @param \StORM\Meta\Table $table
 	 * @param array<\StORM\Meta\Constraint> $constraints
@@ -702,23 +732,23 @@ class Migrator
 	protected function getSqlAddMetas(Table $table, array $constraints = [], array $indexes = [], array $triggers = []): string
 	{
 		$sql = '';
-		
+
 		$sqlEntities = [
 			\Migrator\SqlGenerator\Constraint::class => $constraints,
 			\Migrator\SqlGenerator\Index::class => $indexes,
 			\Migrator\SqlGenerator\Trigger::class => $triggers,
 		];
-		
+
 		foreach ($sqlEntities as $class => $entityToCreate) {
 			foreach ($entityToCreate as $entity) {
 				$entitySql = new $class($this, $table->getName(), $entity);
 				$sql .= $entitySql->getAdd();
 			}
 		}
-		
+
 		return $sql;
 	}
-	
+
 	/**
 	 * @param array<\StORM\Meta\Column> $columns
 	 * @param array<string> $mutations
@@ -727,7 +757,7 @@ class Migrator
 	protected function parseColumns(array $columns, array $mutations): array
 	{
 		$parsed = [];
-		
+
 		foreach ($columns as $column) {
 			if ($column->hasMutations()) {
 				foreach ($mutations as $mutationSuffix) {
@@ -739,10 +769,10 @@ class Migrator
 				$parsed[$column->getName()] = $column;
 			}
 		}
-		
+
 		return $parsed;
 	}
-	
+
 	/**
 	 * @param array<\StORM\Meta\Index> $indexes
 	 * @param array<string> $mutations
@@ -752,30 +782,30 @@ class Migrator
 	protected function parseIndexes(array $indexes, array $mutations, Structure $structure): array
 	{
 		$parsed = [];
-		
+
 		foreach ($indexes as $index) {
 			if ($index->hasMutations()) {
 				foreach ($mutations as $mutationSuffix) {
 					$newName = $index->getName() . $mutationSuffix;
 					$parsed[$newName] = clone $index;
 					$parsed[$newName]->setName($newName);
-					
+
 					$columns = [];
-					
+
 					foreach ($index->getColumns() as $columnName) {
 						$columns[] = $structure->getColumn($columnName)->hasMutations() ? $columnName . $mutationSuffix : $columnName;
 					}
-					
+
 					$parsed[$newName]->setColumns($columns);
 				}
 			} else {
 				$parsed[$index->getName()] = $index;
 			}
 		}
-		
+
 		return $parsed;
 	}
-	
+
 	/**
 	 * @param \StORM\Meta\RelationNxN $relation
 	 * @return array<mixed>
@@ -783,13 +813,13 @@ class Migrator
 	protected function parseNxNRelation(RelationNxN $relation): array
 	{
 		$tableName = $relation->getVia();
-		
+
 		$table = new \StORM\Meta\Table($tableName);
 		$leftColumn = new \StORM\Meta\Column($tableName, $relation->getSourceViaKey());
 		$leftColumn->setName($relation->getSourceViaKey());
 		$leftColumn->setPropertyType($relation->getSourceKeyType());
 		$leftColumn->setPrimaryKey(true);
-		
+
 		$rightColumn = new \StORM\Meta\Column($tableName, $relation->getTargetViaKey());
 		$rightColumn->setName($relation->getTargetViaKey());
 		$rightColumn->setPropertyType($relation->getTargetKeyType());
@@ -798,17 +828,17 @@ class Migrator
 			$leftColumn->getName() => $leftColumn,
 			$rightColumn->getName() => $rightColumn,
 		];
-		
+
 		$leftConstraint = new \StORM\Meta\Constraint($relation->getVia(), '');
 		$leftConstraint->setDefaultsFromRelationNxN($this->schemaManager, $relation, 'source');
 		$leftConstraint->setOnUpdate('CASCADE');
 		$leftConstraint->setOnDelete('CASCADE');
-		
+
 		$rightConstraint = new \StORM\Meta\Constraint($relation->getVia(), '');
 		$rightConstraint->setDefaultsFromRelationNxN($this->schemaManager, $relation, 'target');
 		$rightConstraint->setOnUpdate('CASCADE');
 		$rightConstraint->setOnDelete('CASCADE');
-		
+
 		$constraints = [
 			$leftConstraint->getName() => $leftConstraint,
 			$rightConstraint->getName() => $rightConstraint,
@@ -816,19 +846,19 @@ class Migrator
 		$leftIndex = new \StORM\Meta\Index($relation->getVia());
 		$leftIndex->setName(Strings::substring($relation->getVia() . \StORM\Meta\Structure::NAME_SEPARATOR . $leftColumn->getName(), 0, self::INDEX_MAX_LENGTH));
 		$leftIndex->addColumn($leftColumn->getName());
-		
+
 		$rightIndex = new \StORM\Meta\Index($relation->getVia());
 		$rightIndex->setName(Strings::substring($relation->getVia() . \StORM\Meta\Structure::NAME_SEPARATOR . $rightColumn->getName(), 0, self::INDEX_MAX_LENGTH));
 		$rightIndex->addColumn($rightColumn->getName());
-		
+
 		$indexes = [
 			$leftIndex->getName() => $leftIndex,
 			$rightIndex->getName() => $rightIndex,
 		];
-		
+
 		return [$table, $columns, $constraints, $indexes];
 	}
-	
+
 	/**
 	 * @param \StORM\Meta\Table $table
 	 * @param array<\StORM\Meta\Column> $columns
@@ -836,10 +866,10 @@ class Migrator
 	protected function getSqlCreateTable(Table $table, array $columns): string
 	{
 		$tableSql = new \Migrator\SqlGenerator\Table($this, $table);
-		
+
 		return $tableSql->getAdd($columns);
 	}
-	
+
 	/**
 	 * @param \StORM\Meta\Table $fromTable
 	 * @param \StORM\Meta\Table $toTable
@@ -851,41 +881,41 @@ class Migrator
 		$sql = '';
 		$tableSql = new \Migrator\SqlGenerator\Table($this, $fromTable);
 		$entitySql = new \Migrator\SqlGenerator\Table($this, $toTable);
-		
+
 		if (!$this->compare($tableSql, $entitySql)) {
 			$sql .= $entitySql->getChange($fromTable->getName());
 		}
-		
+
 		$sqlEntities = [
 			\Migrator\SqlGenerator\Column::class => [$fromColumns, $toColumns],
 		];
-		
+
 		foreach ($sqlEntities as $class => $entitiesToCompare) {
 			[$fromEntities, $toEntities] = $entitiesToCompare;
-			
+
 			foreach ($toEntities as $name => $entity) {
 				// add
 				if (!isset($fromEntities[$name])) {
 					$sqlEntity = new $class($this, $fromTable->getName(), $entity);
 					$sql .= $sqlEntity->getAdd();
-					
+
 					continue;
 				}
-				
+
 				// modify
 				$sqlEntity = new $class($this, $fromTable->getName(), $entity);
-				
+
 				if ($this->compare($sqlEntity, new $class($this, $fromTable->getName(), $fromEntities[$name]))) {
 					continue;
 				}
-				
+
 				$sql .= $sqlEntity->getChange($fromEntities[$name]->getName());
 			}
 		}
-		
+
 		return $sql;
 	}
-	
+
 	/**
 	 * @param string $fromTableName
 	 * @param array<\StORM\Meta\Constraint> $fromConstraints
@@ -905,39 +935,39 @@ class Migrator
 		array $toTriggers
 	): string {
 		$sql = '';
-		
+
 		$sqlEntities = [
 			\Migrator\SqlGenerator\Constraint::class => [$fromConstraints, $toConstraints],
 			\Migrator\SqlGenerator\Index::class => [$fromIndexes, $toIndexes],
 			\Migrator\SqlGenerator\Trigger::class => [$fromTriggers, $toTriggers],
 		];
-		
+
 		foreach ($sqlEntities as $class => $entitiesToCompare) {
 			[$fromEntities, $toEntities] = $entitiesToCompare;
-			
+
 			foreach ($toEntities as $name => $entity) {
 				// add
 				if (!isset($fromEntities[$name])) {
 					$sqlEntity = new $class($this, $fromTableName, $entity);
 					$sql .= $sqlEntity->getAdd();
-					
+
 					continue;
 				}
-				
+
 				// modify
 				$sqlEntity = new $class($this, $fromTableName, $entity);
-				
+
 				if ($this->compare($sqlEntity, new $class($this, $fromTableName, $fromEntities[$name]))) {
 					continue;
 				}
-				
+
 				$sql .= $sqlEntity->getChange($fromEntities[$name]->getName());
 			}
 		}
-		
+
 		return $sql;
 	}
-	
+
 	/**
 	 * @param \StORM\Meta\Table $fromTable
 	 * @param array<\StORM\Meta\Column> $fromColumns
@@ -961,35 +991,37 @@ class Migrator
 		array $toTriggers
 	): string {
 		$sql = '';
-		
+
 		$sqlEntities = [
-			\Migrator\SqlGenerator\Column::class => [$fromColumns, $toColumns],
 			\Migrator\SqlGenerator\Constraint::class => [$fromConstraints, $toConstraints],
 			\Migrator\SqlGenerator\Index::class => [$fromIndexes, $toIndexes],
 			\Migrator\SqlGenerator\Trigger::class => [$fromTriggers, $toTriggers],
+			\Migrator\SqlGenerator\Column::class => [$fromColumns, $toColumns],
 		];
-		
+
 		foreach ($sqlEntities as $class => $entitiesToCompare) {
 			[$fromEntities, $toEntities] = $entitiesToCompare;
-			
+
 			foreach ($fromEntities as $name => $entity) {
 				if (!isset($toEntities[$name])) {
+					//Debugger::log(array_keys($fromEntities));
+					//Debugger::log(array_keys($toEntities));
 					$sqlEntity = new $class($this, $fromTable->getName(), $entity);
 					$sql .= $sqlEntity->getDrop();
 				}
 			}
 		}
-		
+
 		return $sql;
 	}
-	
+
 	protected function getSqlDropTable(Table $table): string
 	{
 		$sqlTable = new \Migrator\SqlGenerator\Table($this, $table);
-		
+
 		return $sqlTable->getDrop() . \PHP_EOL;
 	}
-	
+
 	/**
 	 * @param \StORM\Meta\Table $table
 	 * @param array<\StORM\Meta\Constraint> $constraints
@@ -999,28 +1031,28 @@ class Migrator
 	protected function getSqlDropMetas(Table $table, array $constraints, array $indexes, array $triggers): string
 	{
 		$sql = '';
-		
+
 		$sqlEntities = [
 			\Migrator\SqlGenerator\Constraint::class => $constraints,
 			\Migrator\SqlGenerator\Index::class => $indexes,
 			\Migrator\SqlGenerator\Trigger::class => $triggers,
 		];
-		
+
 		foreach ($sqlEntities as $class => $sqlEntity) {
 			foreach ($sqlEntity as $entity) {
 				$sqlEntity = new $class($this, $table->getName(), $entity);
 				$sql .= $sqlEntity->getDrop();
 			}
 		}
-		
+
 		return $sql;
 	}
-	
+
 	private function getSqlDefaultAction(): string
 	{
 		return $this->sqlDefaultAction ??= \version_compare($this->getSqlVersion(), '8.0.0', '>=') && !Strings::contains($this->getSqlVersion(), 'MariaDB') ? 'NO ACTION' : 'RESTRICT';
 	}
-	
+
 	private function getEntityClass(string $repositoryName): string
 	{
 		return Structure::getEntityClassFromRepositoryClass(\get_class($this->connection->findRepositoryByName($repositoryName)));
