@@ -4,6 +4,15 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [1.1.0](https://github.com/liquiddesign/migrator/compare/v1.0.17...v1.1.0) (2024-03-08)
+
+### Features
+
+* DumpCleanAlters method and cleanDatabase script method for cleaning unused columns ([43ace1](https://github.com/liquiddesign/migrator/commit/43ace17f0550eabf6e07d2f6f65f9cbdeca5fefb))
+
+
+---
+
 ## [1.0.17](https://github.com/liquiddesign/migrator/compare/v1.0.16...v1.0.17) (2024-03-08)
 
 ### Builds
