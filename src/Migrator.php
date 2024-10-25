@@ -316,8 +316,8 @@ class Migrator
 					'target' => Strings::substring($match[4] !== '' ? $match[4] : $match[3], 1, -1),
 					'sourceKey' => Strings::substring($source[0][0], 1, -1),
 					'targetKey' => Strings::substring($target[0][0], 1, -1),
-					'onDelete' => $match[6] ?? $defaultAction,
-					'onUpdate' => $match[7] ?? $defaultAction,
+					'onDelete' => isset($match[6]) && $match[6] !== '' ? $match[6] : $defaultAction,
+					'onUpdate' => isset($match[7]) && $match[7] !== '' ? $match[7] : $defaultAction,
 				];
 			}
 		}
@@ -1050,7 +1050,7 @@ class Migrator
 
 	private function getSqlDefaultAction(): string
 	{
-		return $this->sqlDefaultAction ??= \version_compare($this->getSqlVersion(), '8.0.0', '>=') && !Strings::contains($this->getSqlVersion(), 'MariaDB') ? 'NO ACTION' : 'RESTRICT';
+		return $this->sqlDefaultAction ??= \version_compare($this->getSqlVersion(), '8.0.0', '>=') && !\str_contains($this->getSqlVersion(), 'MariaDB') ? 'NO ACTION' : 'RESTRICT';
 	}
 
 	private function getEntityClass(string $repositoryName): string
