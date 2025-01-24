@@ -4,6 +4,15 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [1.1.2](https://github.com/liquiddesign/migrator/compare/v1.1.1...v1.1.2) (2025-01-24)
+
+### Bug Fixes
+
+* Fixed default numeric value ([72d9e5](https://github.com/liquiddesign/migrator/commit/72d9e5667d25071e32fdcd5c90976e181fb1c8bd))
+
+
+---
+
 ## [1.1.0](https://github.com/liquiddesign/migrator/compare/v1.0.17...v1.1.0) (2024-03-08)
 
 ### Features
