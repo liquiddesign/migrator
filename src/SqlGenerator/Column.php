@@ -126,7 +126,7 @@ class Column implements ISqlEntity
 		$type = $this->column->getType();
 		$length = $this->column->getLength() ? '(' . $this->column->getLength() . ')' : '';
 		$nullable = $this->column->isNullable() ? ' NULL' : ' NOT NULL';
-		$noWrap = \is_numeric($this->column->getDefault()) || $this->column->getDefault() === 'CURRENT_TIMESTAMP';
+		$noWrap = (\is_numeric($this->column->getDefault()) && $type !== 'varchar') || $this->column->getDefault() === 'CURRENT_TIMESTAMP';
 		$default = $this->column->getDefault() !== null ? ' DEFAULT ' . ($noWrap ? $this->column->getDefault() : "'" . $this->column->getDefault() . "'") : '';
 		$extra = $this->column->isAutoincrement() ? ' ' . ($this->column->isPrimaryKey() ? '' : 'UNIQUE ') . 'AUTO_INCREMENT' : ($this->column->getExtra() ? ' ' . $this->column->getExtra() : '');
 		$comment = $this->column->getComment() ? ' COMMENT ' . $this->connection->quote($this->column->getComment()) : '';
