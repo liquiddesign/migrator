@@ -95,11 +95,13 @@ class Column implements ISqlEntity
 			}
 		}
 		
-		if ($this->column->getCollate() === null) {
+		$isJsonType = $this->column->getType() === 'json';
+
+		if ($this->column->getCollate() === null && !$isJsonType) {
 			$this->column->setCollate($this->migrator->getDefaultCollation());
 		}
-		
-		if ($this->column->getCharset() === null) {
+
+		if ($this->column->getCharset() === null && !$isJsonType) {
 			$this->column->setCharset($this->migrator->getDefaultCharset());
 		}
 		

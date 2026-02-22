@@ -87,6 +87,8 @@ class Migrator
 
 	private bool $debug = false;
 
+	private ?bool $mariaDb = null;
+
 	public function __construct(DIConnection $connection, SchemaManager $schemaManager)
 	{
 		$this->connection = $connection;
@@ -278,6 +280,16 @@ class Migrator
 			$column->loadFromArray(Helpers::toArrayRecursive($data));
 
 			$columns[$data->name] = $column;
+		}
+
+		$jsonColumnNames = $this->getJsonColumnNames($tableName);
+
+		foreach ($jsonColumnNames as $jsonColumnName) {
+			if (isset($columns[$jsonColumnName]) && $columns[$jsonColumnName]->getType() === 'longtext') {
+				$columns[$jsonColumnName]->setType('json');
+				$columns[$jsonColumnName]->setCollate(null);
+				$columns[$jsonColumnName]->setCharset(null);
+			}
 		}
 
 		return $columns;
@@ -712,6 +724,11 @@ class Migrator
 		return $this->getConnection()->getLink()->getAttribute(\PDO::ATTR_SERVER_VERSION);
 	}
 
+	public function isMariaDb(): bool
+	{
+		return $this->mariaDb ??= \str_contains($this->getSqlVersion(), 'MariaDB');
+	}
+
 	protected function compare(ISqlEntity $entity, ISqlEntity $toCompareEntity): bool
 	{
 		$match = $entity->getSqlProperties() === $toCompareEntity->getSqlProperties();
@@ -1048,9 +1065,37 @@ class Migrator
 		return $sql;
 	}
 
+	/**
+	 * @return array<string>
+	 */
+	private function getJsonColumnNames(string $tableName): array
+	{
+		if (!$this->isMariaDb()) {
+			return [];
+		}
+
+		$dbName = $this->connection->getDatabaseName();
+		$rows = $this->connection->rows(
+			['this' => 'INFORMATION_SCHEMA.CHECK_CONSTRAINTS'],
+			['checkClause' => 'this.CHECK_CLAUSE'],
+		)
+			->where('this.CONSTRAINT_SCHEMA', $dbName)
+			->where('this.TABLE_NAME', $tableName);
+
+		$jsonColumns = [];
+
+		foreach ($rows as $row) {
+			if (\preg_match('/json_valid\(`(\w+)`\)/', $row->checkClause, $matches)) {
+				$jsonColumns[] = $matches[1];
+			}
+		}
+
+		return $jsonColumns;
+	}
+
 	private function getSqlDefaultAction(): string
 	{
-		return $this->sqlDefaultAction ??= \version_compare($this->getSqlVersion(), '8.0.0', '>=') && !\str_contains($this->getSqlVersion(), 'MariaDB') ? 'NO ACTION' : 'RESTRICT';
+		return $this->sqlDefaultAction ??= \version_compare($this->getSqlVersion(), '8.0.0', '>=') && !$this->isMariaDb() ? 'NO ACTION' : 'RESTRICT';
 	}
 
 	private function getEntityClass(string $repositoryName): string
