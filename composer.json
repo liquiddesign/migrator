@@ -15,7 +15,7 @@
         "ext-json": "*",
         "liquiddesign/storm": "~2.0",
         "tracy/tracy": "^2.0",
-        "nette/caching": "~3.0",
+        "nette/caching": "^3.0 || ^4.0",
         "composer/composer": "^2.0"
     },
     "require-dev": {

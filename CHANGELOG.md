@@ -4,6 +4,12 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [1.1.5](https://github.com/liquiddesign/migrator/compare/v1.1.4...v1.1.5) (2026-11-16)
+
+### Compatibility
+
+* Allow `nette/caching` `^3.0 || ^4.0` — `Migrator` only builds `new Cache(new DevNullStorage())` (no behaviour change)
+
 ## [1.1.2](https://github.com/liquiddesign/migrator/compare/v1.1.1...v1.1.2) (2025-01-24)
 
 ### Bug Fixes
